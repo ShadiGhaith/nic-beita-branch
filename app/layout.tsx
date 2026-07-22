@@ -5,11 +5,7 @@ export const metadata: Metadata = {
   title: "الشركة الوطنية للتأمين - فرع بيتا",
   description: "فرع بيتا - صرح الشهيد، نقدم أفضل خدمات التأمين الشامل والمركبات",
   icons: {
-    icon: [
-      { url: '/images.jpeg' },
-      { url: '/images.jpeg', sizes: '32x32', type: 'image/jpeg' },
-    ],
-    apple: { url: '/images.jpeg' },
+    icon: "/icon.png",
   },
 };
 
