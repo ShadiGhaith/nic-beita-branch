@@ -1,11 +1,11 @@
-import type { Metadata } from "metadata"; // أو استيرادها بشكل صحيح حسب إصدار Next لديك
+import type { Metadata } from "next";
 import "./globals.css";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "الشركة الوطنية للتأمين - فرع بيتا",
   description: "فرع بيتا - صرح الشهيد، نقدم أفضل خدمات التأمين الشامل والمركبات",
   icons: {
-    icon: "/images.jpeg", // ضع مسار أيقونة اللوجو الخاص بك هنا
+    icon: "/images.jpeg",
   },
 };
 
