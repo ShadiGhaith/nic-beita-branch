@@ -10,7 +10,7 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 const LOGO_URL = "/images.jpeg";
 const WHATSAPP_NUMBER = "970592017101";
 const BRANCH_LOCATION = "جنوب نابلس - بيتا - صرح الشهيد";
-const GOOGLE_MAPS_URL = "https://maps.app.goo.gl/3oQ8G5nU9vT2QGfP8";
+const GOOGLE_MAPS_URL = "https://maps.app.goo.gl/Su4SA1RjhHw8zAqE9";
 
 // رابط الـ Web App الخاص بك في Google Apps Script
 const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyaYmLvYCKnlH1dn3YT0AA5Z7QX0fDWDoSIpobCfqNt1tRM_MTQK4cYDI5rGVZnw-UP/exec';
