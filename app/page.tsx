@@ -3,9 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
@@ -24,138 +21,255 @@ interface Service {
 interface SiteSettings {
   branch_name: string;
   manager_name: string;
-  working_status_mode: string;
   ticker_text: string;
   ticker_enabled: boolean;
+  working_status_mode: string;
 }
 
-export default function HomePage() {
-  const [services, setServices] = useState<Service[]>([]);
+// 🟢 مكون عرض الوصف المختصر مع زر إظهار التفاصيل
+function ExpandableDescription({ text }: { text: string }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  if (!text) return null;
+
+  const lines = text.split('\n').filter(p => p.trim().length > 0);
+  const previewText = lines[0] || '';
+  const hasMore = lines.length > 1 || text.length > 90;
+
+  return (
+    <div className="space-y-2 pt-2 border-t border-slate-100 text-xs md:text-sm text-slate-600 leading-relaxed">
+      <p className="whitespace-pre-line">{isExpanded ? text : previewText}</p>
+      
+      {hasMore && (
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="text-emerald-600 hover:text-emerald-800 font-bold text-xs inline-flex items-center gap-1 transition-colors mt-1 focus:outline-none"
+        >
+          {isExpanded ? '▲ إخفاء التفاصيل' : '▼ عرض التفاصيل الكاملة'}
+        </button>
+      )}
+    </div>
+  );
+}
+
+export default function NICPalestineLanding() {
   const [settings, setSettings] = useState<SiteSettings>({
-    branch_name: 'شركة التأمين الوطنية - فرع بيتا',
-    manager_name: 'إدارة الفرع',
-    working_status_mode: 'auto',
-    ticker_text: 'أهلاً بكم في شركة التأمين الوطنية - فرع بيتا',
+    branch_name: 'فرع بيتا',
+    manager_name: 'غيث فايز أحمد',
+    ticker_text: 'خصومات على كافة التأمينات تصل الى 10%',
     ticker_enabled: true,
+    working_status_mode: 'auto',
   });
+  const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentTime, setCurrentTime] = useState<string>('');
 
   useEffect(() => {
     fetchData();
+
+    const timer = setInterval(() => {
+      const now = new Date();
+      setCurrentTime(now.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+    }, 1000);
+
+    return () => clearInterval(timer);
   }, []);
 
   const fetchData = async () => {
-    setLoading(true);
+    try {
+      const { data: settingsData } = await supabase.from('site_settings').select('*').single();
+      if (settingsData) setSettings(settingsData);
 
-    const { data: servicesData } = await supabase
-      .from('services')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (servicesData) setServices(servicesData);
-
-    const { data: settingsData } = await supabase
-      .from('site_settings')
-      .select('*')
-      .eq('id', 1)
-      .single();
-
-    if (settingsData) {
-      setSettings(settingsData);
+      const { data: servicesData } = await supabase.from('services').select('*').order('created_at', { ascending: false });
+      if (servicesData) setServices(servicesData);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const getWorkingStatus = () => {
-    if (settings.working_status_mode === 'open') return { isOpen: true, text: 'مفتوح الآن' };
-    if (settings.working_status_mode === 'closed') return { isOpen: false, text: 'مغلق حالياً' };
+    if (settings.working_status_mode === 'open') {
+      return {
+        isOpen: true,
+        text: "مفتوح الآن",
+        message: "أهلاً بك! نستقبل المراجعين حالياً لخدمتكم وإصدار وثائق التأمين.",
+        color: "bg-emerald-500",
+        textColor: "text-emerald-700",
+        bgLight: "bg-emerald-50"
+      };
+    }
+    if (settings.working_status_mode === 'closed') {
+      return {
+        isOpen: false,
+        text: "مغلق حالياً",
+        message: "المكتب مغلق حالياً. نسعد بخدمتكم خلال أوقات العمل الرسمية.",
+        color: "bg-rose-500",
+        textColor: "text-rose-700",
+        bgLight: "bg-rose-50"
+      };
+    }
 
     const now = new Date();
     const day = now.getDay();
     const hours = now.getHours();
 
-    if (day === 5 || day === 6 || hours < 8 || hours >= 15) {
-      return { isOpen: false, text: 'مغلق حالياً' };
+    const isWorkingDay = day >= 0 && day <= 4;
+    const isWorkingHours = hours >= 9 && hours < 16;
+
+    if (isWorkingDay && isWorkingHours) {
+      return {
+        isOpen: true,
+        text: "مفتوح الآن",
+        message: "أهلاً بك! يستقبل المكتب المراجعين حالياً لخدمتكم وإصدار وثائق التأمين.",
+        color: "bg-emerald-500",
+        textColor: "text-emerald-700",
+        bgLight: "bg-emerald-50"
+      };
     }
-    return { isOpen: true, text: 'مفتوح الآن' };
+
+    let closedReason = "انتهى دوام اليوم الرسمي. نسعد بخدمتكم غداً بدءاً من الساعة 9:00 صباحاً.";
+    if (!isWorkingDay) {
+      closedReason = "اليوم عطلة أسبوعية للمكتب. نسعد بخدمتكم يوم الأحد القادم الساعة 9:00 صباحاً.";
+    } else if (hours < 9) {
+      closedReason = "المكتب مغلق حالياً. يفتح المكتب أبوابه اليوم الساعة 9:00 صباحاً.";
+    }
+
+    return {
+      isOpen: false,
+      text: "مغلق حالياً",
+      message: closedReason,
+      color: "bg-rose-500",
+      textColor: "text-rose-700",
+      bgLight: "bg-rose-50"
+    };
   };
 
   const status = getWorkingStatus();
 
-  // دالة آمنة لتقسيم النص لنقاط بدون أخطاء Build
-  const parseDescriptionToPoints = (text: string) => {
-    if (!text) return [];
-    return text
-      .replace(/([.:!؟])/g, '$1|')
-      .split('|')
-      .map((p) => p.trim())
-      .filter((p) => p.length > 0);
-  };
-
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 pb-16" dir="rtl">
+    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans scroll-smooth" dir="rtl">
       
-      {/* الشريط المتحرك */}
       {settings.ticker_enabled && settings.ticker_text && (
-        <div className="bg-emerald-900 text-white text-xs md:text-sm font-medium py-2 px-4 overflow-hidden shadow-inner">
-          <div className="whitespace-nowrap animate-marquee flex items-center justify-around">
-            <span>📢 {settings.ticker_text}</span>
+        <div className="bg-red-600 text-white flex items-center h-10 px-4 overflow-hidden border-b border-red-700 shadow-sm">
+          <span className="bg-white text-red-700 text-xs font-black px-3 py-1 rounded-md shrink-0 z-10 flex items-center gap-1.5 shadow">
+            <span className="w-2 h-2 rounded-full bg-red-600 animate-ping"></span>
+            تحديثات
+          </span>
+          <div className="overflow-hidden whitespace-nowrap w-full mr-3">
+            <div className="inline-block animate-marquee font-bold text-xs md:text-sm text-white">
+              {settings.ticker_text} &nbsp;&nbsp;&nbsp;&nbsp; ✦ &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}
+            </div>
           </div>
+          <style jsx>{`
+            @keyframes marquee {
+              0% { transform: translateX(100%); }
+              100% { transform: translateX(-100%); }
+            }
+            .animate-marquee {
+              display: inline-block;
+              animation: marquee 22s linear infinite;
+            }
+            .animate-marquee:hover {
+              animation-play-state: paused;
+            }
+          `}</style>
         </div>
       )}
 
-      {/* الهيدر */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center">
+          
           <div className="flex items-center gap-3">
-            <img src={LOGO_URL} alt="NIC Logo" className="h-12 w-auto object-contain rounded-lg" />
-            <div>
-              <h1 className="font-black text-base md:text-lg text-slate-900 leading-tight">
-                {settings.branch_name}
+            <a href="/admin" title="لوحة التحكم">
+              <img 
+                src={LOGO_URL} 
+                alt="شركة التأمين الوطنية" 
+                className="h-10 md:h-12 w-auto object-contain rounded-md hover:opacity-80 transition-opacity cursor-pointer"
+              />
+            </a>
+            <div className="border-r-2 border-emerald-600 pr-3 my-1">
+              <h1 className="font-extrabold text-slate-900 text-base md:text-lg leading-tight">
+                الشركة الوطنية للتأمين
               </h1>
-              <p className="text-xs text-slate-500 font-medium">إدارة: {settings.manager_name}</p>
+              <p className="text-xs text-emerald-700 font-bold">
+                {settings.branch_name || 'فرع بيتا'}
+              </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${
-              status.isOpen ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-rose-100 text-rose-800 border border-rose-300'
-            }`}>
-              <span className={`w-2 h-2 rounded-full ${status.isOpen ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`}></span>
-              {status.text}
-            </span>
+          <nav className="hidden md:flex items-center gap-8 text-sm font-bold text-slate-700">
+            <a href="#about" className="hover:text-emerald-700 transition-colors">عن الشركة</a>
+            <a href="#services" className="hover:text-emerald-700 transition-colors">خدماتنا التأمينية</a>
+            <a href="#contact" className="hover:text-emerald-700 transition-colors">تواصل معنا</a>
+          </nav>
+
+          <div className="flex items-center gap-3">
+            <div className={`hidden sm:flex items-center gap-2 ${status.bgLight} border border-slate-200 px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm`}>
+              <span className={`w-2.5 h-2.5 rounded-full ${status.color} ${status.isOpen ? 'animate-ping' : ''}`}></span>
+              <span className={status.textColor}>{status.text}</span>
+            </div>
+
+            <a
+              href={`https://wa.me/${WHATSAPP_NUMBER}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs md:text-sm font-bold px-5 py-2.5 rounded-xl transition-all shadow hover:shadow-md flex items-center gap-2"
+            >
+              <span>💬</span> اتصل بنا الآن
+            </a>
           </div>
+
         </div>
       </header>
 
-      {/* الهيرو */}
-      <section className="bg-gradient-to-b from-emerald-900 to-slate-900 text-white py-14 px-4 text-center relative overflow-hidden">
-        <div className="max-w-3xl mx-auto space-y-4 relative z-10">
-          <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-extrabold px-3 py-1 rounded-full inline-block">
-            برامج التأمين المتميزة
+      <section className="bg-emerald-800 text-white py-20 px-4 text-center relative shadow-inner">
+        <div className="max-w-4xl mx-auto space-y-5">
+          <span className="inline-block bg-emerald-500/30 text-emerald-200 border border-emerald-400/30 font-extrabold px-4 py-1.5 rounded-full text-xs shadow-sm">
+            ☂️ الأمان والحماية الفائقة لرأس مالك وعائلتك
           </span>
-          <h2 className="text-3xl md:text-5xl font-black leading-tight">
-            خدماتنا التأمينية المتميزة
+          
+          <h2 className="text-3xl md:text-5xl font-black tracking-tight leading-snug">
+            الشركة الوطنية للتأمين - {settings.branch_name}
           </h2>
-          <p className="text-slate-300 text-sm md:text-base font-normal max-w-xl mx-auto">
-            نوفر لكم أفضل التغطيات التأمينية الشاملة بأعلى معايير الجودة والسرعة في الخدمة.
+          
+          <p className="text-emerald-100 text-sm md:text-base max-w-2xl mx-auto leading-relaxed">
+            نوفر أوسع نطاق تغطية تأمينية في فلسطين للمركبات، التأمين الصحي، الشامل والممتلكات مع خدمة عملاء ممتازة.
           </p>
-          <div className="pt-2 text-xs text-slate-400 font-medium">
-            📍 {BRANCH_LOCATION}
-          </div>
+          
+          {settings.manager_name && (
+            <div className="pt-2">
+              <span className="inline-block bg-emerald-950/60 border border-emerald-600/50 px-5 py-2 rounded-full text-xs text-emerald-200 font-semibold shadow">
+                👔 تحت إدارة المدير: <strong className="text-white">{settings.manager_name}</strong>
+              </span>
+            </div>
+          )}
         </div>
       </section>
 
-      {/* كروت الخدمات */}
-      <main className="max-w-6xl mx-auto px-4 py-12">
+      <section id="services" className="max-w-7xl mx-auto px-6 py-16 scroll-mt-28">
+        <div className="text-center mb-12">
+          <span className="text-emerald-800 font-bold text-xs bg-emerald-100 px-3 py-1 rounded-md">
+            برامج التأمين
+          </span>
+          <h2 className="text-3xl font-black text-slate-900 mt-2">
+            خدماتنا التأمينية المتميزة
+          </h2>
+          <div className="w-16 h-1 bg-emerald-600 mx-auto mt-3 rounded-full"></div>
+        </div>
+
         {loading ? (
-          <div className="text-center py-20 text-slate-500 text-sm font-bold">جاري تحميل الخدمات...</div>
+          <div className="text-center py-12 text-slate-500 font-medium">جاري تحميل الخدمات...</div>
         ) : services.length === 0 ? (
-          <div className="text-center py-20 text-slate-400 text-sm font-medium">لا توجد خدمات مضافة حالياً.</div>
+          <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-slate-300 text-slate-500">
+            لا توجد خدمات مضافة حالياً. يمكنك إضافتها من لوحة التحكم.
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {services.map((service) => {
-              const points = parseDescriptionToPoints(service.description);
+              const waMessage = encodeURIComponent(`مرحباً ${settings.branch_name}، أرغب بالحصول على استشارة واستفسار حول خدمة: (${service.title})`);
+              const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${waMessage}`;
 
               return (
                 <div 
@@ -174,31 +288,28 @@ export default function HomePage() {
                         NIC
                       </div>
                     )}
+                    <div className="absolute top-3 right-3 bg-emerald-900/80 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1 rounded-full">
+                      تغطية معتمدة
+                    </div>
                   </div>
 
                   <div className="p-6 flex-grow flex flex-col justify-between space-y-6">
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-black text-slate-900 group-hover:text-emerald-700 transition-colors">
+                    <div className="space-y-3">
+                      <h3 className="text-xl font-black text-slate-900 group-hover:text-emerald-700 transition-colors leading-snug">
                         {service.title}
                       </h3>
-
-                      <div className="space-y-2 pt-2 border-t border-slate-100">
-                        {points.map((point, idx) => (
-                          <div key={idx} className="flex items-start gap-2.5 text-xs md:text-sm text-slate-600 leading-relaxed">
-                            <span className="w-2 h-2 rounded-full bg-emerald-500 mt-2 shrink-0"></span>
-                            <span>{point}</span>
-                          </div>
-                        ))}
-                      </div>
+                      
+                      {/* استخدام المكون الجديد لعرض المعاينة وزر التفاصيل */}
+                      <ExpandableDescription text={service.description} />
                     </div>
 
                     <a
-                      href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(`مرحباً، أستفسر عن: ${service.title}`)}`}
+                      href={whatsappUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="w-full text-center py-3 bg-emerald-50 hover:bg-emerald-600 hover:text-white border border-emerald-200 text-emerald-800 text-xs font-extrabold rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm"
                     >
-                      <span>💬</span> طلب استشارة أو استفسار
+                      <span>💬</span> طلب استشارة عبر الواتساب
                     </a>
                   </div>
                 </div>
@@ -206,11 +317,151 @@ export default function HomePage() {
             })}
           </div>
         )}
-      </main>
+      </section>
 
-      <footer className="max-w-6xl mx-auto px-4 pt-8 border-t border-slate-200 text-center text-xs text-slate-500">
-        <p>© {new Date().getFullYear()} {settings.branch_name}. جميع الحقوق محفوظة.</p>
+      <section id="about" className="bg-white border-y border-slate-200 py-16 px-6 scroll-mt-28">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="space-y-5">
+            <span className="text-emerald-700 font-bold text-xs bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-md">
+              عن الشركة
+            </span>
+            <h2 className="text-3xl font-black text-slate-900 leading-snug">
+              خبرة وثقة متواصلة في تقديم أجود الخدمات التأمينية
+            </h2>
+            <p className="text-slate-600 leading-relaxed text-sm md:text-base">
+              تسعى الشركة الوطنية للتأمين لتوفير بيئة آمنة للمواطنين والمؤسسات في فلسطين من خلال حزمة شاملة من الحلول التأمينية الشاملة والمصممة لتلبي الاحتياجات بكل دقة وسرعة في تسوية التعويضات.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-slate-50 border border-slate-200 p-6 rounded-2xl text-center shadow-sm">
+              <div className="text-3xl md:text-4xl font-black text-emerald-600 mb-1">+25</div>
+              <div className="text-xs font-bold text-slate-600">عقود من الخبرة</div>
+            </div>
+            <div className="bg-slate-50 border border-slate-200 p-6 rounded-2xl text-center shadow-sm">
+              <div className="text-3xl md:text-4xl font-black text-emerald-600 mb-1">100%</div>
+              <div className="text-xs font-bold text-slate-600">التزام بالتعويضات</div>
+            </div>
+            <div className="bg-slate-50 border border-slate-200 p-6 rounded-2xl text-center shadow-sm">
+              <div className="text-3xl md:text-4xl font-black text-emerald-600 mb-1">24/7</div>
+              <div className="text-xs font-bold text-slate-600">دعم متواصل</div>
+            </div>
+            <div className="bg-slate-50 border border-slate-200 p-6 rounded-2xl text-center shadow-sm">
+              <div className="text-3xl md:text-4xl font-black text-emerald-600 mb-1">+10k</div>
+              <div className="text-xs font-bold text-slate-600">عميل ومؤمّن</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="contact" className="bg-slate-100 py-16 px-6 border-t border-slate-200 scroll-mt-28">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-10">
+            <span className="text-emerald-800 font-bold text-xs bg-emerald-100 px-3 py-1 rounded-md">
+              نحن هنا لخدمتك
+            </span>
+            <h2 className="text-3xl font-black text-slate-900 mt-2">
+              تواصل مع {settings.branch_name}
+            </h2>
+            <p className="text-slate-600 text-sm mt-1">يسعدنا استقبال استفساراتك وزيارتك في مقر الفرع</p>
+            <div className="w-16 h-1 bg-emerald-600 mx-auto mt-3 rounded-full"></div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white p-6 rounded-2xl border border-slate-200 text-center shadow-sm hover:shadow-md transition-all">
+              <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 text-xl">
+                📍
+              </div>
+              <h3 className="font-bold text-slate-900 mb-1">موقع الفرع</h3>
+              <p className="text-xs text-slate-600 font-semibold">{BRANCH_LOCATION}</p>
+            </div>
+
+            <div className="bg-white p-6 rounded-2xl border border-slate-200 text-center shadow-sm hover:shadow-md transition-all">
+              <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 text-xl">
+                📞
+              </div>
+              <h3 className="font-bold text-slate-900 mb-1">الاتصال والمحادثة</h3>
+              <p className="text-xs text-slate-600 mb-3">{WHATSAPP_NUMBER}</p>
+              <a 
+                href={`https://wa.me/${WHATSAPP_NUMBER}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-600 hover:text-white px-4 py-2 rounded-lg border border-emerald-200 transition-all shadow-sm"
+              >
+                محادثة واتساب مباشرة
+              </a>
+            </div>
+
+            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all space-y-3">
+              <div className="flex justify-between items-center border-b pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center text-sm">
+                    ⏰
+                  </div>
+                  <h3 className="font-bold text-slate-900 text-sm">حالة الدوام</h3>
+                </div>
+                {currentTime && (
+                  <span className="text-[11px] font-mono text-slate-500 bg-slate-100 px-2 py-1 rounded-md border border-slate-200">
+                    {currentTime}
+                  </span>
+                )}
+              </div>
+
+              <div className="text-center space-y-2">
+                <span className={`inline-flex items-center gap-1.5 text-xs font-black ${status.textColor} ${status.bgLight} px-3 py-1 rounded-full border border-slate-200`}>
+                  <span className={`w-2 h-2 rounded-full ${status.color} ${status.isOpen ? 'animate-ping' : ''}`}></span>
+                  {status.text}
+                </span>
+                
+                <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                  {status.message}
+                </p>
+              </div>
+
+              <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-[11px] space-y-1 text-slate-600">
+                <div className="flex justify-between">
+                  <span>أيام العمل:</span>
+                  <strong className="text-slate-800">الأحد - الخميس (9:00 ص - 4:00 م)</strong>
+                </div>
+                <div className="flex justify-between">
+                  <span>العطلة الأسبوعية:</span>
+                  <strong className="text-slate-800">الجمعة والسبت</strong>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <footer className="bg-emerald-950 text-emerald-100/80 py-12 px-6 border-t border-emerald-900">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 mb-8 text-sm">
+          <div>
+            <h3 className="text-white font-bold text-base mb-3">الشركة الوطنية للتأمين</h3>
+            <p className="text-xs leading-relaxed text-emerald-200/70">
+              {settings.branch_name} - تقديم كافة خدمات التأمين العام، التأمين الشامل، والمعدات بأعلى معايير الجودة والتسهيلات.
+            </p>
+          </div>
+          <div>
+            <h3 className="text-white font-bold text-base mb-3">روابط سريعة</h3>
+            <ul className="space-y-2 text-xs">
+              <li><a href="#services" className="hover:text-emerald-400 transition-colors">الخدمات التأمينية</a></li>
+              <li><a href="#about" className="hover:text-emerald-400 transition-colors">عن الشركة</a></li>
+              <li><a href="#contact" className="hover:text-emerald-400 transition-colors">تواصل معنا</a></li>
+            </ul>
+          </div>
+          <div>
+            <h3 className="text-white font-bold text-base mb-3">إدارة الفرع</h3>
+            <p className="text-xs text-emerald-200/70">الموقع: {BRANCH_LOCATION}</p>
+            <p className="text-xs text-emerald-200/70 mt-1">إدارة الفرع: {settings.manager_name}</p>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto pt-6 border-t border-emerald-900/60 text-center text-xs text-emerald-300/50">
+          جميع الحقوق محفوظة © {new Date().getFullYear()} - الشركة الوطنية للتأمين (NIC)
+        </div>
       </footer>
+
     </div>
   );
 }
