@@ -12,8 +12,6 @@ const WHATSAPP_NUMBER = "970592017101";
 const BRANCH_LOCATION = "جنوب نابلس - بيتا - صرح الشهيد";
 const GOOGLE_MAPS_URL = "https://maps.app.goo.gl/3oQ8G5nU9vT2QGfP8";
 
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyaYmLvYCKnlH1dn3YT0AA5Z7QX0fDWDoSIpobCfqNt1tRM_MTQK4cYDI5rGVZnw-UP/exec';
-
 interface Service {
   id: string;
   title: string;
@@ -114,18 +112,16 @@ export default function NICPalestineLanding() {
     setCallbackError('');
 
     try {
-      const currentName = callbackName.trim();
-      const currentPhone = callbackPhone.trim();
+      // إدخال البيانات مباشرة إلى جدول call_requests في Supabase
+      const { error } = await supabase.from('call_requests').insert([
+        {
+          name: callbackName.trim(),
+          phone: callbackPhone.trim(),
+          status: 'pending'
+        }
+      ]);
 
-      const params = new URLSearchParams({
-        name: currentName,
-        phone: currentPhone,
-      });
-
-      await fetch(`${GOOGLE_SCRIPT_URL}?${params.toString()}`, {
-        method: 'GET',
-        mode: 'no-cors',
-      });
+      if (error) throw error;
 
       setCallbackSuccess(true);
       setCallbackName('');
@@ -218,8 +214,8 @@ export default function NICPalestineLanding() {
             </div>
             <style jsx>{`
               @keyframes marquee {
-                0% { transform: translateX(-50%); }
-                100% { transform: translateX(0%); }
+                0% { transform: translateX(-100%); }
+                100% { transform: translateX(100%); }
               }
               .animate-marquee {
                 display: inline-block;
@@ -708,7 +704,7 @@ export default function NICPalestineLanding() {
           )}
 
           {callbackSuccess && (
-            <div className="text-center text-emerald-400 text-xs font-bold bg-emerald-950/50 p-3 rounded-xl border border-emerald-900">
+            <div className="text-center text-emerald-400 text-xs font-bold bg-emerald-950/50 p-3 rounded-xl border border-rose-900">
               تم إرسال طلبك بنجاح! سيتواصل معك فريق الفرع قريباً.
             </div>
           )}
