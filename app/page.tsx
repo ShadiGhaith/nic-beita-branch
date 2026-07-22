@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
+export const dynamic = 'force-dynamic';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
@@ -23,33 +24,7 @@ interface SiteSettings {
   manager_name: string;
   ticker_text: string;
   ticker_enabled: boolean;
-  working_status_mode: string;
-}
-
-// 🟢 مكون عرض الوصف المختصر مع زر إظهار التفاصيل
-function ExpandableDescription({ text }: { text: string }) {
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  if (!text) return null;
-
-  const lines = text.split('\n').filter(p => p.trim().length > 0);
-  const previewText = lines[0] || '';
-  const hasMore = lines.length > 1 || text.length > 90;
-
-  return (
-    <div className="space-y-2 pt-2 border-t border-slate-100 text-xs md:text-sm text-slate-600 leading-relaxed">
-      <p className="whitespace-pre-line">{isExpanded ? text : previewText}</p>
-      
-      {hasMore && (
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="text-emerald-600 hover:text-emerald-800 font-bold text-xs inline-flex items-center gap-1 transition-colors mt-1 focus:outline-none"
-        >
-          {isExpanded ? '▲ إخفاء التفاصيل' : '▼ عرض التفاصيل الكاملة'}
-        </button>
-      )}
-    </div>
-  );
+  working_status_mode: string; // 'auto' | 'open' | 'closed'
 }
 
 export default function NICPalestineLanding() {
@@ -67,6 +42,7 @@ export default function NICPalestineLanding() {
   useEffect(() => {
     fetchData();
 
+    // تحديث الساعة المباشرة في كرت الدوام
     const timer = setInterval(() => {
       const now = new Date();
       setCurrentTime(now.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
@@ -89,7 +65,9 @@ export default function NICPalestineLanding() {
     }
   };
 
+  // 🟢 دالة احتساب حالة الدوام التشغيلية
   const getWorkingStatus = () => {
+    // 1. التحكم اليدوي من لوحة التحكم
     if (settings.working_status_mode === 'open') {
       return {
         isOpen: true,
@@ -111,8 +89,9 @@ export default function NICPalestineLanding() {
       };
     }
 
+    // 2. التحكم التلقائي بناءً على الوقت الحالي (الأحد - الخميس: 9:00 ص إلى 4:00 م)
     const now = new Date();
-    const day = now.getDay();
+    const day = now.getDay(); // 0 = الأحد, ..., 4 = الخميس, 5 = الجمعة, 6 = السبت
     const hours = now.getHours();
 
     const isWorkingDay = day >= 0 && day <= 4;
@@ -151,79 +130,88 @@ export default function NICPalestineLanding() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 font-sans scroll-smooth" dir="rtl">
       
-      {settings.ticker_enabled && settings.ticker_text && (
-        <div className="bg-red-600 text-white flex items-center h-10 px-4 overflow-hidden border-b border-red-700 shadow-sm">
-          <span className="bg-white text-red-700 text-xs font-black px-3 py-1 rounded-md shrink-0 z-10 flex items-center gap-1.5 shadow">
-            <span className="w-2 h-2 rounded-full bg-red-600 animate-ping"></span>
-            تحديثات
-          </span>
-          <div className="overflow-hidden whitespace-nowrap w-full mr-3">
-            <div className="inline-block animate-marquee font-bold text-xs md:text-sm text-white">
-              {settings.ticker_text} &nbsp;&nbsp;&nbsp;&nbsp; ✦ &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}
+      {/* حاوية موحدة مثبتة في الأعلى لتضم شريط التحديثات والهيدر معاً */}
+      <div className="sticky top-0 z-50 w-full shadow-md bg-white">
+        
+        {/* 1. الشريط المتحرك العاجل */}
+        {settings.ticker_enabled && settings.ticker_text && (
+          <div className="bg-red-600 text-white flex items-center h-10 px-4 overflow-hidden border-b border-red-700 shadow-sm">
+            <span className="bg-white text-red-700 text-xs font-black px-3 py-1 rounded-md shrink-0 z-10 flex items-center gap-1.5 shadow">
+              <span className="w-2 h-2 rounded-full bg-red-600 animate-ping"></span>
+              تحديثات
+            </span>
+            <div className="overflow-hidden whitespace-nowrap w-full mr-3">
+              <div className="inline-block animate-marquee font-bold text-xs md:text-sm text-white">
+                {settings.ticker_text} &nbsp;&nbsp;&nbsp;&nbsp; ✦ &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}
+              </div>
             </div>
+            <style jsx>{`
+              @keyframes marquee {
+                0% { transform: translateX(100%); }
+                100% { transform: translateX(-100%); }
+              }
+              .animate-marquee {
+                display: inline-block;
+                animation: marquee 22s linear infinite;
+              }
+              .animate-marquee:hover {
+                animation-play-state: paused;
+              }
+            `}</style>
           </div>
-          <style jsx>{`
-            @keyframes marquee {
-              0% { transform: translateX(100%); }
-              100% { transform: translateX(-100%); }
-            }
-            .animate-marquee {
-              display: inline-block;
-              animation: marquee 22s linear infinite;
-            }
-            .animate-marquee:hover {
-              animation-play-state: paused;
-            }
-          `}</style>
-        </div>
-      )}
+        )}
 
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center">
-          
-          <div className="flex items-center gap-3">
-            <a href="/admin" title="لوحة التحكم">
-              <img 
-                src={LOGO_URL} 
-                alt="شركة التأمين الوطنية" 
-                className="h-10 md:h-12 w-auto object-contain rounded-md hover:opacity-80 transition-opacity cursor-pointer"
-              />
-            </a>
-            <div className="border-r-2 border-emerald-600 pr-3 my-1">
-              <h1 className="font-extrabold text-slate-900 text-base md:text-lg leading-tight">
-                الشركة الوطنية للتأمين
-              </h1>
-              <p className="text-xs text-emerald-700 font-bold">
-                {settings.branch_name || 'فرع بيتا'}
-              </p>
-            </div>
-          </div>
-
-          <nav className="hidden md:flex items-center gap-8 text-sm font-bold text-slate-700">
-            <a href="#about" className="hover:text-emerald-700 transition-colors">عن الشركة</a>
-            <a href="#services" className="hover:text-emerald-700 transition-colors">خدماتنا التأمينية</a>
-            <a href="#contact" className="hover:text-emerald-700 transition-colors">تواصل معنا</a>
-          </nav>
-
-          <div className="flex items-center gap-3">
-            <div className={`hidden sm:flex items-center gap-2 ${status.bgLight} border border-slate-200 px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm`}>
-              <span className={`w-2.5 h-2.5 rounded-full ${status.color} ${status.isOpen ? 'animate-ping' : ''}`}></span>
-              <span className={status.textColor}>{status.text}</span>
+        {/* 2. الهيدر العلوي مع تفاصيل الجوال وسطح المكتب */}
+        <header className="bg-white border-b border-slate-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex justify-between items-center">
+            
+            <div className="flex items-center gap-2 sm:gap-3">
+              <a href="/admin" title="لوحة التحكم">
+                <img 
+                  src={LOGO_URL} 
+                  alt="شركة التأمين الوطنية" 
+                  className="h-9 sm:h-10 md:h-12 w-auto object-contain rounded-md hover:opacity-80 transition-opacity cursor-pointer"
+                />
+              </a>
+              <div className="border-r-2 border-emerald-600 pr-2 sm:pr-3 my-1">
+                <h1 className="font-extrabold text-slate-900 text-sm sm:text-base md:text-lg leading-tight">
+                  الشركة الوطنية للتأمين
+                </h1>
+                <p className="text-[11px] sm:text-xs text-emerald-700 font-bold">
+                  {settings.branch_name || 'فرع بيتا'}
+                </p>
+              </div>
             </div>
 
-            <a
-              href={`https://wa.me/${WHATSAPP_NUMBER}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs md:text-sm font-bold px-5 py-2.5 rounded-xl transition-all shadow hover:shadow-md flex items-center gap-2"
-            >
-              <span>💬</span> اتصل بنا الآن
-            </a>
+            <nav className="hidden md:flex items-center gap-8 text-sm font-bold text-slate-700">
+              <a href="#about" className="hover:text-emerald-700 transition-colors">عن الشركة</a>
+              <a href="#services" className="hover:text-emerald-700 transition-colors">خدماتنا التأمينية</a>
+              <a href="#contact" className="hover:text-emerald-700 transition-colors">تواصل معنا</a>
+            </nav>
+
+            <div className="flex items-center gap-2 sm:gap-3">
+              {/* شارة حالة الدوام المباشرة بالهيدر */}
+              <div className={`hidden sm:flex items-center gap-2 ${status.bgLight} border border-slate-200 px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm`}>
+                <span className={`w-2.5 h-2.5 rounded-full ${status.color} ${status.isOpen ? 'animate-ping' : ''}`}></span>
+                <span className={status.textColor}>{status.text}</span>
+              </div>
+
+              <a
+                href={`https://wa.me/${WHATSAPP_NUMBER}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] sm:text-xs md:text-sm font-bold px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl transition-all shadow hover:shadow-md flex items-center gap-1.5 sm:gap-2"
+              >
+                <span>💬</span> <span>اتصل بنا</span>
+              </a>
+            </div>
+
           </div>
+        </header>
 
-        </div>
-      </header>
+      </div>
 
+      {/* 3. القسم الرئيسي (Hero) */}
       <section className="bg-emerald-800 text-white py-20 px-4 text-center relative shadow-inner">
         <div className="max-w-4xl mx-auto space-y-5">
           <span className="inline-block bg-emerald-500/30 text-emerald-200 border border-emerald-400/30 font-extrabold px-4 py-1.5 rounded-full text-xs shadow-sm">
@@ -248,6 +236,7 @@ export default function NICPalestineLanding() {
         </div>
       </section>
 
+      {/* 4. قسم خدماتنا التأمينية (مع حل مشكلة scroll-mt-28) */}
       <section id="services" className="max-w-7xl mx-auto px-6 py-16 scroll-mt-28">
         <div className="text-center mb-12">
           <span className="text-emerald-800 font-bold text-xs bg-emerald-100 px-3 py-1 rounded-md">
@@ -274,7 +263,7 @@ export default function NICPalestineLanding() {
               return (
                 <div 
                   key={service.id} 
-                  className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col group"
+                  className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col group"
                 >
                   <div className="h-52 w-full bg-slate-100 relative overflow-hidden">
                     {service.image_url ? (
@@ -288,26 +277,23 @@ export default function NICPalestineLanding() {
                         NIC
                       </div>
                     )}
-                    <div className="absolute top-3 right-3 bg-emerald-900/80 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1 rounded-full">
-                      تغطية معتمدة
-                    </div>
                   </div>
 
-                  <div className="p-6 flex-grow flex flex-col justify-between space-y-6">
-                    <div className="space-y-3">
-                      <h3 className="text-xl font-black text-slate-900 group-hover:text-emerald-700 transition-colors leading-snug">
+                  <div className="p-6 flex-grow flex flex-col justify-between space-y-4">
+                    <div>
+                      <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-emerald-700 transition-colors">
                         {service.title}
                       </h3>
-                      
-                      {/* استخدام المكون الجديد لعرض المعاينة وزر التفاصيل */}
-                      <ExpandableDescription text={service.description} />
+                      <p className="text-slate-600 text-sm leading-relaxed">
+                        {service.description}
+                      </p>
                     </div>
 
                     <a
                       href={whatsappUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-full text-center py-3 bg-emerald-50 hover:bg-emerald-600 hover:text-white border border-emerald-200 text-emerald-800 text-xs font-extrabold rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm"
+                      className="w-full text-center py-2.5 bg-emerald-50 hover:bg-emerald-600 hover:text-white border border-emerald-200 text-emerald-800 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2"
                     >
                       <span>💬</span> طلب استشارة عبر الواتساب
                     </a>
@@ -319,6 +305,7 @@ export default function NICPalestineLanding() {
         )}
       </section>
 
+      {/* 5. قسم عن الشركة (مع حل مشكلة scroll-mt-28) */}
       <section id="about" className="bg-white border-y border-slate-200 py-16 px-6 scroll-mt-28">
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-5">
@@ -354,6 +341,7 @@ export default function NICPalestineLanding() {
         </div>
       </section>
 
+      {/* 6. قسم تواصل معنا وقسم ساعات العمل المتكامل */}
       <section id="contact" className="bg-slate-100 py-16 px-6 border-t border-slate-200 scroll-mt-28">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-10">
@@ -392,6 +380,7 @@ export default function NICPalestineLanding() {
               </a>
             </div>
 
+            {/* 🟢 كرت ساعات العمل وحالة الدوام التفاعلي الكامل */}
             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all space-y-3">
               <div className="flex justify-between items-center border-b pb-3">
                 <div className="flex items-center gap-2">
@@ -434,6 +423,7 @@ export default function NICPalestineLanding() {
         </div>
       </section>
 
+      {/* 7. الفووتر */}
       <footer className="bg-emerald-950 text-emerald-100/80 py-12 px-6 border-t border-emerald-900">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 mb-8 text-sm">
           <div>
