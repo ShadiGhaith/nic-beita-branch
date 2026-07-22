@@ -27,12 +27,14 @@ export default function AdminDashboard() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [displayOrder, setDisplayOrder] = useState<number>(0); // 🟢 حالة ترتيب الإضافة الجديدة
   
   // 🟢 حالات تعديل الخدمة
   const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editDescription, setEditDescription] = useState('');
   const [editImageUrl, setEditImageUrl] = useState('');
+  const [editDisplayOrder, setEditDisplayOrder] = useState<number>(0); // 🟢 حالة ترتيب التعديل
 
   const [savingSettings, setSavingSettings] = useState(false);
   const [addingService, setAddingService] = useState(false);
@@ -72,7 +74,8 @@ export default function AdminDashboard() {
       setWorkingStatusMode(settings.working_status_mode || 'auto');
     }
 
-    const { data: servicesData } = await supabase.from('services').select('*').order('created_at', { ascending: false });
+    // 🟢 جلب الخدمات مرتبة تصاعدياً حسب حقل الترتيب الجديد
+    const { data: servicesData } = await supabase.from('services').select('*').order('display_order', { ascending: true });
     if (servicesData) setServices(servicesData);
   };
 
@@ -97,13 +100,15 @@ export default function AdminDashboard() {
     const { error } = await supabase.from('services').insert([{
       title,
       description,
-      image_url: imageUrl
+      image_url: imageUrl,
+      display_order: displayOrder // 🟢 إرسال حقل الترتيب
     }]);
     setAddingService(false);
     if (!error) {
       setTitle('');
       setDescription('');
       setImageUrl('');
+      setDisplayOrder(0);
       fetchAdminData();
       alert('تمت إضافة الخدمة بنجاح!');
     }
@@ -116,15 +121,14 @@ export default function AdminDashboard() {
     }
   };
 
-  // 🟢 بدء وضع التعديل لخدمة معينة
   const handleStartEdit = (service: any) => {
     setEditingServiceId(service.id);
     setEditTitle(service.title);
     setEditDescription(service.description);
     setEditImageUrl(service.image_url || '');
+    setEditDisplayOrder(service.display_order ?? 0); // 🟢 تعبئة حقل التترتيب عند التعديل
   };
 
-  // 🟢 حفظ التعديلات على الخدمة
   const handleUpdateService = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingServiceId) return;
@@ -134,7 +138,8 @@ export default function AdminDashboard() {
       .update({
         title: editTitle,
         description: editDescription,
-        image_url: editImageUrl
+        image_url: editImageUrl,
+        display_order: editDisplayOrder // 🟢 تحديث حقل الترتيب
       })
       .eq('id', editingServiceId);
 
@@ -305,8 +310,8 @@ export default function AdminDashboard() {
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
           <h2 className="text-lg font-bold text-slate-900 border-b pb-2">إضافة برنامج تأميني جديد</h2>
           <form onSubmit={handleAddService} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="md:col-span-2">
                 <label className="block text-xs font-bold text-slate-800 mb-1">عنوان الخدمة</label>
                 <input
                   type="text"
@@ -318,15 +323,25 @@ export default function AdminDashboard() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-800 mb-1">رابط صورة الخدمة (Image URL)</label>
+                <label className="block text-xs font-bold text-emerald-700 mb-1">🔢 ترتيب الظهور (الأولوية)</label>
                 <input
-                  type="text"
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  placeholder="https://example.com/image.jpg"
-                  className="w-full p-2.5 border border-slate-300 text-slate-900 font-medium placeholder:text-slate-400 rounded-xl text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                  type="number"
+                  value={displayOrder}
+                  onChange={(e) => setDisplayOrder(parseInt(e.target.value) || 0)}
+                  placeholder="مثلاً: 1, 2, 3..."
+                  className="w-full p-2.5 border border-emerald-300 bg-emerald-50/50 text-slate-900 font-bold rounded-xl text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                 />
               </div>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-800 mb-1">رابط صورة الخدمة (Image URL)</label>
+              <input
+                type="text"
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                placeholder="https://example.com/image.jpg"
+                className="w-full p-2.5 border border-slate-300 text-slate-900 font-medium placeholder:text-slate-400 rounded-xl text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+              />
             </div>
             <div>
               <label className="block text-xs font-bold text-slate-800 mb-1">وصف الخدمة</label>
@@ -349,9 +364,9 @@ export default function AdminDashboard() {
           </form>
         </div>
 
-        {/* 🟢 قائمة الخدمات الحالية مع خيار التعديل والحذف */}
+        {/* قائمة الخدمات الحالية مع خيار التعديل والحذف */}
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-          <h2 className="text-lg font-bold text-slate-900 border-b pb-2">الخدمات المضافة حالياً (إدارة وتعديل)</h2>
+          <h2 className="text-lg font-bold text-slate-900 border-b pb-2">الخدمات المضافة حالياً (إدارة وتعديل وترتيب)</h2>
           {services.length === 0 ? (
             <p className="text-xs text-slate-500">لا توجد خدمات مضافة حتى الآن.</p>
           ) : (
@@ -364,8 +379,13 @@ export default function AdminDashboard() {
                         <img src={item.image_url} alt="" className="w-12 h-12 object-cover rounded-lg shrink-0" />
                       )}
                       <div>
-                        <h4 className="font-bold text-slate-900 text-sm">{item.title}</h4>
-                        <p className="text-xs text-slate-600 line-clamp-1">{item.description}</p>
+                        <div className="flex items-center gap-2">
+                          <span className="bg-emerald-100 text-emerald-800 font-bold text-[10px] px-2 py-0.5 rounded-md">
+                            الترتيب: {item.display_order ?? 0}
+                          </span>
+                          <h4 className="font-bold text-slate-900 text-sm">{item.title}</h4>
+                        </div>
+                        <p className="text-xs text-slate-600 line-clamp-1 mt-1">{item.description}</p>
                       </div>
                     </div>
                   </div>
@@ -376,7 +396,7 @@ export default function AdminDashboard() {
                       onClick={() => handleStartEdit(item)}
                       className="text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-all"
                     >
-                      ✏️ تعديل
+                      ✏️ تعديل وترتيب
                     </button>
                     <button
                       onClick={() => handleDeleteService(item.id)}
@@ -391,12 +411,12 @@ export default function AdminDashboard() {
           )}
         </div>
 
-        {/* 🟢 نافذة منبثقة (Modal) لتعديل الخدمة */}
+        {/* نافذة منبثقة (Modal) لتعديل الخدمة والترتيب */}
         {editingServiceId && (
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl p-6 w-full max-w-lg space-y-4 shadow-2xl border border-slate-200 animate-in fade-in zoom-in duration-200">
               <div className="flex justify-between items-center border-b pb-3">
-                <h3 className="font-black text-lg text-slate-900">تعديل البرنامج التأميني</h3>
+                <h3 className="font-black text-lg text-slate-900">تعديل البرنامج التأميني والترتيب</h3>
                 <button 
                   onClick={() => setEditingServiceId(null)}
                   className="text-slate-400 hover:text-slate-600 font-bold text-lg"
@@ -406,15 +426,26 @@ export default function AdminDashboard() {
               </div>
 
               <form onSubmit={handleUpdateService} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-800 mb-1">عنوان الخدمة</label>
-                  <input
-                    type="text"
-                    required
-                    value={editTitle}
-                    onChange={(e) => setEditTitle(e.target.value)}
-                    className="w-full p-2.5 border border-slate-300 text-slate-900 font-medium rounded-xl text-sm outline-none focus:border-emerald-500"
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-bold text-slate-800 mb-1">عنوان الخدمة</label>
+                    <input
+                      type="text"
+                      required
+                      value={editTitle}
+                      onChange={(e) => setEditTitle(e.target.value)}
+                      className="w-full p-2.5 border border-slate-300 text-slate-900 font-medium rounded-xl text-sm outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-emerald-700 mb-1">🔢 الترتيب</label>
+                    <input
+                      type="number"
+                      value={editDisplayOrder}
+                      onChange={(e) => setEditDisplayOrder(parseInt(e.target.value) || 0)}
+                      className="w-full p-2.5 border border-emerald-300 bg-emerald-50/50 text-slate-900 font-bold rounded-xl text-sm outline-none focus:border-emerald-500"
+                    />
+                  </div>
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-800 mb-1">رابط صورة الخدمة (Image URL)</label>
