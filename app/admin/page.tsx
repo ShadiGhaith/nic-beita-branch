@@ -2,7 +2,17 @@
 
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
+import { useRouter } from 'next/navigation';
 
+// داخل الكومبوننت:
+const router = useRouter();
+
+const handleSave = async () => {
+  // كود الحفظ في Supabase...
+  
+  // بعد نجاح الحفظ:
+  router.refresh(); // يُنعش البيانات في Next.js
+};
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
