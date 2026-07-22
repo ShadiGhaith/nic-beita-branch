@@ -47,7 +47,6 @@ export default function HomePage() {
   const fetchData = async () => {
     setLoading(true);
 
-    // جلب الخدمات
     const { data: servicesData } = await supabase
       .from('services')
       .select('*')
@@ -55,7 +54,6 @@ export default function HomePage() {
 
     if (servicesData) setServices(servicesData);
 
-    // جلب الإعدادات
     const { data: settingsData } = await supabase
       .from('site_settings')
       .select('*')
@@ -68,17 +66,14 @@ export default function HomePage() {
     setLoading(false);
   };
 
-  // حساب حالة الدوام بناءً على الخيار المحدد
   const getWorkingStatus = () => {
     if (settings.working_status_mode === 'open') return { isOpen: true, text: 'مفتوح الآن' };
     if (settings.working_status_mode === 'closed') return { isOpen: false, text: 'مغلق حالياً' };
 
-    // الوضع الأوتوماتيكي
     const now = new Date();
-    const day = now.getDay(); // 0: Sunday, 6: Saturday
+    const day = now.getDay();
     const hours = now.getHours();
 
-    // العطلة الجمعة (5) والسبت (6) أو خارج الأوقات من 8 صباحاً إلى 3 مساءً
     if (day === 5 || day === 6 || hours < 8 || hours >= 15) {
       return { isOpen: false, text: 'مغلق حالياً' };
     }
@@ -87,10 +82,20 @@ export default function HomePage() {
 
   const status = getWorkingStatus();
 
+  // دالة آمنة لتقسيم النص لنقاط بدون أخطاء Build
+  const parseDescriptionToPoints = (text: string) => {
+    if (!text) return [];
+    return text
+      .replace(/([.:!؟])/g, '$1|')
+      .split('|')
+      .map((p) => p.trim())
+      .filter((p) => p.length > 0);
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900 pb-16" dir="rtl">
       
-      {/* الشريط المتحرك (Ticker) */}
+      {/* الشريط المتحرك */}
       {settings.ticker_enabled && settings.ticker_text && (
         <div className="bg-emerald-900 text-white text-xs md:text-sm font-medium py-2 px-4 overflow-hidden shadow-inner">
           <div className="whitespace-nowrap animate-marquee flex items-center justify-around">
@@ -99,7 +104,7 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* الهيدر الرئيسي */}
+      {/* الهيدر */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -112,7 +117,6 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* شارة حالة العمل */}
           <div className="flex items-center gap-2">
             <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${
               status.isOpen ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-rose-100 text-rose-800 border border-rose-300'
@@ -124,7 +128,7 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* القسم الرئيسي / الهيرو */}
+      {/* الهيرو */}
       <section className="bg-gradient-to-b from-emerald-900 to-slate-900 text-white py-14 px-4 text-center relative overflow-hidden">
         <div className="max-w-3xl mx-auto space-y-4 relative z-10">
           <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-extrabold px-3 py-1 rounded-full inline-block">
@@ -142,7 +146,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* قسم كروت الخدمات */}
+      {/* كروت الخدمات */}
       <main className="max-w-6xl mx-auto px-4 py-12">
         {loading ? (
           <div className="text-center py-20 text-slate-500 text-sm font-bold">جاري تحميل الخدمات...</div>
@@ -151,17 +155,13 @@ export default function HomePage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {services.map((service) => {
-              // تقسيم النص للنقاط منظم
-              const descriptionPoints = service.description
-                ? service.description.split(/(?<=[.:!؟])\s+/).filter(p => p.trim().length > 0)
-                : [];
+              const points = parseDescriptionToPoints(service.description);
 
               return (
                 <div 
                   key={service.id} 
                   className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col group"
                 >
-                  {/* الصورة */}
                   <div className="h-52 w-full bg-slate-100 relative overflow-hidden">
                     {service.image_url ? (
                       <img 
@@ -176,7 +176,6 @@ export default function HomePage() {
                     )}
                   </div>
 
-                  {/* التفاصيل المنسقة */}
                   <div className="p-6 flex-grow flex flex-col justify-between space-y-6">
                     <div className="space-y-4">
                       <h3 className="text-lg font-black text-slate-900 group-hover:text-emerald-700 transition-colors">
@@ -184,7 +183,7 @@ export default function HomePage() {
                       </h3>
 
                       <div className="space-y-2 pt-2 border-t border-slate-100">
-                        {descriptionPoints.map((point, idx) => (
+                        {points.map((point, idx) => (
                           <div key={idx} className="flex items-start gap-2.5 text-xs md:text-sm text-slate-600 leading-relaxed">
                             <span className="w-2 h-2 rounded-full bg-emerald-500 mt-2 shrink-0"></span>
                             <span>{point}</span>
@@ -193,7 +192,6 @@ export default function HomePage() {
                       </div>
                     </div>
 
-                    {/* زر التواصل */}
                     <a
                       href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(`مرحباً، أستفسر عن: ${service.title}`)}`}
                       target="_blank"
@@ -210,8 +208,7 @@ export default function HomePage() {
         )}
       </main>
 
-      {/* الفوتر */}
-      <footer className="max-w-6xl mx-auto px-4 pt-8 border-t border-slate-200 text-center text-xs text-slate-500 space-y-2">
+      <footer className="max-w-6xl mx-auto px-4 pt-8 border-t border-slate-200 text-center text-xs text-slate-500">
         <p>© {new Date().getFullYear()} {settings.branch_name}. جميع الحقوق محفوظة.</p>
       </footer>
     </div>
