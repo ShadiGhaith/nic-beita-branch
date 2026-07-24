@@ -10,8 +10,7 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 const LOGO_URL = "/images.jpeg";
 const WHATSAPP_NUMBER = "970592017101";
 const BRANCH_LOCATION = "جنوب نابلس - بيتا - صرح الشهيد";
-const GOOGLE_MAPS_URL = "https://maps.app.goo.gl/3oQ8G5nU9vT2QGfP8";
-
+const GOOGLE_MAPS_URL = "https://www.google.com/maps/search/?api=1&query=Beta,+Palestine";
 interface Service {
   id: string;
   title: string;
