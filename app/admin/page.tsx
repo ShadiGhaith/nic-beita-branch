@@ -2,17 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { useRouter } from 'next/navigation';
 
-// داخل الكومبوننت:
-const router = useRouter();
-
-const handleSave = async () => {
-  // كود الحفظ في Supabase...
-  
-  // بعد نجاح الحفظ:
-  router.refresh(); // يُنعش البيانات في Next.js
-};
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
@@ -31,14 +21,21 @@ export default function AdminDashboard() {
   const [tickerText, setTickerText] = useState('');
   const [tickerEnabled, setTickerEnabled] = useState(true);
   
-  // 🟢 إضافة حالة الدوام (auto = تلقائي حسب الوقت، open = مفتوح دائماً، closed = مغلق دائماً)
   const [workingStatusMode, setWorkingStatusMode] = useState('auto');
 
   const [services, setServices] = useState<any[]>([]);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [displayOrder, setDisplayOrder] = useState<number>(0); // 🟢 حالة ترتيب الإضافة الجديدة
   
+  // 🟢 حالات تعديل الخدمة
+  const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [editImageUrl, setEditImageUrl] = useState('');
+  const [editDisplayOrder, setEditDisplayOrder] = useState<number>(0); // 🟢 حالة ترتيب التعديل
+
   const [savingSettings, setSavingSettings] = useState(false);
   const [addingService, setAddingService] = useState(false);
 
@@ -77,7 +74,8 @@ export default function AdminDashboard() {
       setWorkingStatusMode(settings.working_status_mode || 'auto');
     }
 
-    const { data: servicesData } = await supabase.from('services').select('*').order('created_at', { ascending: false });
+    // 🟢 جلب الخدمات مرتبة تصاعدياً حسب حقل الترتيب الجديد
+    const { data: servicesData } = await supabase.from('services').select('*').order('display_order', { ascending: true });
     if (servicesData) setServices(servicesData);
   };
 
@@ -102,13 +100,15 @@ export default function AdminDashboard() {
     const { error } = await supabase.from('services').insert([{
       title,
       description,
-      image_url: imageUrl
+      image_url: imageUrl,
+      display_order: displayOrder // 🟢 إرسال حقل الترتيب
     }]);
     setAddingService(false);
     if (!error) {
       setTitle('');
       setDescription('');
       setImageUrl('');
+      setDisplayOrder(0);
       fetchAdminData();
       alert('تمت إضافة الخدمة بنجاح!');
     }
@@ -121,6 +121,37 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleStartEdit = (service: any) => {
+    setEditingServiceId(service.id);
+    setEditTitle(service.title);
+    setEditDescription(service.description);
+    setEditImageUrl(service.image_url || '');
+    setEditDisplayOrder(service.display_order ?? 0); // 🟢 تعبئة حقل التترتيب عند التعديل
+  };
+
+  const handleUpdateService = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingServiceId) return;
+
+    const { error } = await supabase
+      .from('services')
+      .update({
+        title: editTitle,
+        description: editDescription,
+        image_url: editImageUrl,
+        display_order: editDisplayOrder // 🟢 تحديث حقل الترتيب
+      })
+      .eq('id', editingServiceId);
+
+    if (!error) {
+      alert('تم تعديل الخدمة بنجاح!');
+      setEditingServiceId(null);
+      fetchAdminData();
+    } else {
+      alert('حدث خطأ أثناء التعديل');
+    }
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4" dir="rtl">
@@ -129,7 +160,7 @@ export default function AdminDashboard() {
             <div className="w-14 h-14 bg-emerald-100 text-emerald-800 rounded-2xl flex items-center justify-center mx-auto mb-3 text-2xl font-black">
               🔒
             </div>
-            <h2 className="text-2xl font-black text-slate-900">تسجيل الدخول للوحة التحكم</h2>
+            <h2 className="text-2xl font-black text-slate-900">تسجيل الدخول لوحة التحكم</h2>
             <p className="text-xs text-slate-500 mt-1">الشركة الوطنية للتأمين</p>
           </div>
 
@@ -230,7 +261,6 @@ export default function AdminDashboard() {
               />
             </div>
 
-            {/* التحكم بحالة الدوام */}
             <div className="md:col-span-2 bg-slate-50 p-4 rounded-xl border border-slate-200">
               <label className="block text-xs font-bold text-slate-800 mb-2">🟢 التحكم بحالة الدوام الظاهرة على الموقع</label>
               <select
@@ -280,8 +310,8 @@ export default function AdminDashboard() {
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
           <h2 className="text-lg font-bold text-slate-900 border-b pb-2">إضافة برنامج تأميني جديد</h2>
           <form onSubmit={handleAddService} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="md:col-span-2">
                 <label className="block text-xs font-bold text-slate-800 mb-1">عنوان الخدمة</label>
                 <input
                   type="text"
@@ -293,15 +323,25 @@ export default function AdminDashboard() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-800 mb-1">رابط صورة الخدمة (Image URL)</label>
+                <label className="block text-xs font-bold text-emerald-700 mb-1">🔢 ترتيب الظهور (الأولوية)</label>
                 <input
-                  type="text"
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  placeholder="https://example.com/image.jpg"
-                  className="w-full p-2.5 border border-slate-300 text-slate-900 font-medium placeholder:text-slate-400 rounded-xl text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                  type="number"
+                  value={displayOrder}
+                  onChange={(e) => setDisplayOrder(parseInt(e.target.value) || 0)}
+                  placeholder="مثلاً: 1, 2, 3..."
+                  className="w-full p-2.5 border border-emerald-300 bg-emerald-50/50 text-slate-900 font-bold rounded-xl text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                 />
               </div>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-800 mb-1">رابط صورة الخدمة (Image URL)</label>
+              <input
+                type="text"
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                placeholder="https://example.com/image.jpg"
+                className="w-full p-2.5 border border-slate-300 text-slate-900 font-medium placeholder:text-slate-400 rounded-xl text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+              />
             </div>
             <div>
               <label className="block text-xs font-bold text-slate-800 mb-1">وصف الخدمة</label>
@@ -324,35 +364,127 @@ export default function AdminDashboard() {
           </form>
         </div>
 
-        {/* قائمة الخدمات الحالية */}
+        {/* قائمة الخدمات الحالية مع خيار التعديل والحذف */}
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-          <h2 className="text-lg font-bold text-slate-900 border-b pb-2">الخدمات المضافة حالياً</h2>
+          <h2 className="text-lg font-bold text-slate-900 border-b pb-2">الخدمات المضافة حالياً (إدارة وتعديل وترتيب)</h2>
           {services.length === 0 ? (
             <p className="text-xs text-slate-500">لا توجد خدمات مضافة حتى الآن.</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {services.map((item) => (
-                <div key={item.id} className="p-4 border border-slate-200 rounded-xl flex gap-3 items-center justify-between bg-slate-50">
-                  <div className="flex gap-3 items-center">
-                    {item.image_url && (
-                      <img src={item.image_url} alt="" className="w-12 h-12 object-cover rounded-lg" />
-                    )}
-                    <div>
-                      <h4 className="font-bold text-slate-900 text-sm">{item.title}</h4>
-                      <p className="text-xs text-slate-600 line-clamp-1">{item.description}</p>
+                <div key={item.id} className="p-4 border border-slate-200 rounded-xl bg-slate-50 space-y-3">
+                  <div className="flex gap-3 items-center justify-between">
+                    <div className="flex gap-3 items-center">
+                      {item.image_url && (
+                        <img src={item.image_url} alt="" className="w-12 h-12 object-cover rounded-lg shrink-0" />
+                      )}
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="bg-emerald-100 text-emerald-800 font-bold text-[10px] px-2 py-0.5 rounded-md">
+                            الترتيب: {item.display_order ?? 0}
+                          </span>
+                          <h4 className="font-bold text-slate-900 text-sm">{item.title}</h4>
+                        </div>
+                        <p className="text-xs text-slate-600 line-clamp-1 mt-1">{item.description}</p>
+                      </div>
                     </div>
                   </div>
-                  <button
-                    onClick={() => handleDeleteService(item.id)}
-                    className="text-xs font-bold text-red-600 hover:text-red-800 bg-red-100 hover:bg-red-200 px-3 py-1.5 rounded-lg transition-all"
-                  >
-                    حذف
-                  </button>
+
+                  {/* أزرار التحكم بالخدمة */}
+                  <div className="flex justify-end gap-2 pt-2 border-t border-slate-200">
+                    <button
+                      onClick={() => handleStartEdit(item)}
+                      className="text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-all"
+                    >
+                      ✏️ تعديل وترتيب
+                    </button>
+                    <button
+                      onClick={() => handleDeleteService(item.id)}
+                      className="text-xs font-bold text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-all"
+                    >
+                      🗑️ حذف
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
           )}
         </div>
+
+        {/* نافذة منبثقة (Modal) لتعديل الخدمة والترتيب */}
+        {editingServiceId && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl p-6 w-full max-w-lg space-y-4 shadow-2xl border border-slate-200 animate-in fade-in zoom-in duration-200">
+              <div className="flex justify-between items-center border-b pb-3">
+                <h3 className="font-black text-lg text-slate-900">تعديل البرنامج التأميني والترتيب</h3>
+                <button 
+                  onClick={() => setEditingServiceId(null)}
+                  className="text-slate-400 hover:text-slate-600 font-bold text-lg"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <form onSubmit={handleUpdateService} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-bold text-slate-800 mb-1">عنوان الخدمة</label>
+                    <input
+                      type="text"
+                      required
+                      value={editTitle}
+                      onChange={(e) => setEditTitle(e.target.value)}
+                      className="w-full p-2.5 border border-slate-300 text-slate-900 font-medium rounded-xl text-sm outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-emerald-700 mb-1">🔢 الترتيب</label>
+                    <input
+                      type="number"
+                      value={editDisplayOrder}
+                      onChange={(e) => setEditDisplayOrder(parseInt(e.target.value) || 0)}
+                      className="w-full p-2.5 border border-emerald-300 bg-emerald-50/50 text-slate-900 font-bold rounded-xl text-sm outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1">رابط صورة الخدمة (Image URL)</label>
+                  <input
+                    type="text"
+                    value={editImageUrl}
+                    onChange={(e) => setEditImageUrl(e.target.value)}
+                    className="w-full p-2.5 border border-slate-300 text-slate-900 font-medium rounded-xl text-sm outline-none focus:border-emerald-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1">وصف الخدمة</label>
+                  <textarea
+                    required
+                    rows={4}
+                    value={editDescription}
+                    onChange={(e) => setEditDescription(e.target.value)}
+                    className="w-full p-2.5 border border-slate-300 text-slate-900 font-medium rounded-xl text-sm outline-none focus:border-emerald-500"
+                  />
+                </div>
+                <div className="flex justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setEditingServiceId(null)}
+                    className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all"
+                  >
+                    إلغاء
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow"
+                  >
+                    حفظ التعديلات
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
 
       </div>
     </div>
