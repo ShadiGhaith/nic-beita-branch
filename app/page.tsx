@@ -716,7 +716,7 @@ export default function NICPalestineLanding() {
 
       {/* الفوتر */}
       <footer className="bg-slate-900 text-slate-400 py-8 px-6 border-t border-slate-800 text-center text-xs space-y-3">
-        <p>©جميع الحقوق محفوظة لدى شركة التأمين الوطنية فرع بيتا 2026 </p>
+        <p>جميع الحقوق محفوظة لدى شركة التأمين الوطنية فرع بيتا 2026 ©</p>
         <p className="text-[11px] text-slate-500">تم التطوير لخدمة مراجعي الفرع بكل احترافية وسرعة</p>
       </footer>
 
