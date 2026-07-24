@@ -1,21 +1,22 @@
 {
   "name": "الشركة الوطنية للتأمين - فرع بيتا",
   "short_name": "تأمين بيتا",
-  "description": "فرع بيتا - صرح الشهيد، إصدار وثائق التأمين وخدمات الطوارئ",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#047857",
   "icons": [
     {
-      "src": "/images.jpeg",
+      "src": "/icon-192.png",
       "sizes": "192x192",
-      "type": "image/jpeg"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "/images.jpeg",
+      "src": "/icon-512.png",
       "sizes": "512x512",
-      "type": "image/jpeg"
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }
