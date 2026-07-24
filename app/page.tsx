@@ -209,13 +209,13 @@ export default function NICPalestineLanding() {
             </span>
             <div className="flex-1 overflow-hidden relative">
               <div className="whitespace-nowrap animate-marquee font-bold text-xs md:text-sm text-white inline-block">
-                {settings.ticker_text} &nbsp;&nbsp;&nbsp;&nbsp; ✦ &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text} &nbsp;&nbsp;&nbsp;&nbsp; ✦ &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}
+                {settings.ticker_text} &nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text} &nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}
               </div>
             </div>
             <style jsx>{`
               @keyframes marquee {
-                0% { transform: translateX(-100%); }
-                100% { transform: translateX(100%); }
+                0% { transform: translateX(-55%); }
+                100% { transform: translateX(55%); }
               }
               .animate-marquee {
                 display: inline-block;
