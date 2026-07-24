@@ -195,10 +195,10 @@ export default function NICPalestineLanding() {
   const emergencyWhatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${emergencyMessage}`;
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans scroll-smooth overflow-x-hidden" dir="rtl">
+    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans scroll-smooth" dir="rtl">
 
-      {/* الهيدر وشريط التحديثات - مثبتان تماماً بالاعلى */}
-      <div className="sticky top-0 z-50 w-full shadow-md bg-white">
+      {/* الهيدر وشريط التحديثات مثبتين بشكل مطلق في أعلى الصفحة باستخدام fixed لضمان عدم اختفائهما نهائياً */}
+      <div className="fixed top-0 left-0 right-0 z-50 w-full shadow-md bg-white">
 
         {settings.ticker_enabled && settings.ticker_text && (
           <div className="bg-red-600 text-white flex items-center h-10 px-4 border-b border-red-700 shadow-sm relative overflow-hidden">
@@ -324,6 +324,9 @@ export default function NICPalestineLanding() {
 
       </div>
 
+      {/* مساحة تعويضية علوية لكي لا يغطي الهيدر الثابت محتوى صفحة الـ Hero */}
+      <div className="pt-24 sm:pt-28"></div>
+
       {/* قسم الـ Hero */}
       <section className="bg-gradient-to-br from-emerald-900 via-emerald-800 to-slate-900 text-white py-20 px-4 text-center relative shadow-lg overflow-hidden">
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]"></div>
@@ -368,7 +371,7 @@ export default function NICPalestineLanding() {
       </section>
 
       {/* قسم خدماتنا التأمينية */}
-      <section id="services" className="max-w-7xl mx-auto px-6 py-16 scroll-mt-28">
+      <section id="services" className="max-w-7xl mx-auto px-6 py-16 scroll-mt-32">
         <div className="text-center mb-12">
           <span className="text-emerald-800 font-bold text-xs bg-emerald-100 px-3 py-1 rounded-md">
             برامج التأمين
@@ -439,7 +442,7 @@ export default function NICPalestineLanding() {
       </section>
 
       {/* قسم عن الشركة */}
-      <section id="about" className="bg-white border-y border-slate-200 py-16 px-6 scroll-mt-28">
+      <section id="about" className="bg-white border-y border-slate-200 py-16 px-6 scroll-mt-32">
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-5">
             <span className="text-emerald-700 font-bold text-xs bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-md">
@@ -475,7 +478,7 @@ export default function NICPalestineLanding() {
       </section>
 
       {/* قسم آراء ومراجعات العملاء */}
-      <section id="testimonials" className="bg-emerald-950 text-white py-16 px-6 scroll-mt-28">
+      <section id="testimonials" className="bg-emerald-950 text-white py-16 px-6 scroll-mt-32">
         <div className="max-w-7xl mx-auto space-y-12">
 
           <div className="text-center">
@@ -545,7 +548,7 @@ export default function NICPalestineLanding() {
       </section>
 
       {/* قسم تواصل معنا */}
-      <section id="contact" className="bg-slate-100 py-16 px-6 border-t border-slate-200 scroll-mt-28">
+      <section id="contact" className="bg-slate-100 py-16 px-6 border-t border-slate-200 scroll-mt-32">
         <div className="max-w-7xl mx-auto space-y-12">
 
           <div className="text-center">
