@@ -214,7 +214,7 @@ export default function NICPalestineLanding() {
             </div>
             <style jsx>{`
               @keyframes marquee {
-            50% { transform: translateX(-50%); }
+            0% { transform: translateX(-100%); }
                 100% { transform: translateX(100%); }
               }
               .animate-marquee {
