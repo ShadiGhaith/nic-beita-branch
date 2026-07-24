@@ -360,7 +360,7 @@ export default function NICPalestineLanding() {
             <div>
               <div className="inline-flex items-center gap-2 bg-slate-900/60 border border-emerald-600/40 px-5 py-2.5 rounded-2xl text-xs text-emerald-200 font-semibold shadow-md backdrop-blur-md">
                 <span>👔</span>
-                <span>تحت إدارة المدير: <strong className="text-white">{settings.manager_name}</strong></span>
+                <span>تحت إدارة: <strong className="text-white">{settings.manager_name}</strong></span>
                 <span dir="ltr" className="bg-emerald-950 px-2 py-0.5 rounded text-emerald-400 font-mono text-[11px] border border-emerald-800">
                   {WHATSAPP_NUMBER}
                 </span>
@@ -716,7 +716,7 @@ export default function NICPalestineLanding() {
 
       {/* الفوتر */}
       <footer className="bg-slate-900 text-slate-400 py-8 px-6 border-t border-slate-800 text-center text-xs space-y-3">
-        <p>© {new Date().getFullYear()} {settings.branch_name} - الشركة الوطنية للتأمين. كافة الحقوق محفوظة.</p>
+        <p>©جميع الحقوق محفوظة لدى شركة التأمين الوطنية فرع بيتا 2026 </p>
         <p className="text-[11px] text-slate-500">تم التطوير لخدمة مراجعي الفرع بكل احترافية وسرعة</p>
       </footer>
 
