@@ -195,26 +195,26 @@ export default function NICPalestineLanding() {
   const emergencyWhatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${emergencyMessage}`;
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans scroll-smooth" dir="rtl">
+    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans scroll-smooth overflow-x-hidden" dir="rtl">
 
-      {/* الهيدر وشريط التحديثات */}
+      {/* الهيدر وشريط التحديثات - مثبتان تماماً بالاعلى */}
       <div className="sticky top-0 z-50 w-full shadow-md bg-white">
 
         {settings.ticker_enabled && settings.ticker_text && (
-          <div className="bg-red-600 text-white flex items-center h-10 px-4 border-b border-red-700 shadow-sm relative">
+          <div className="bg-red-600 text-white flex items-center h-10 px-4 border-b border-red-700 shadow-sm relative overflow-hidden">
             <span className="bg-white text-red-700 text-xs font-black px-2.5 py-1 rounded-md shrink-0 z-20 flex items-center gap-1 shadow ml-3">
               <span className="w-2 h-2 rounded-full bg-red-600 animate-ping"></span>
               تحديثات
             </span>
             <div className="flex-1 overflow-hidden relative">
               <div className="whitespace-nowrap animate-marquee font-bold text-xs md:text-sm text-white inline-block">
-                {settings.ticker_text} &nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text} &nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text} &nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text} &nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text} &nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text} &nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text} &nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}&nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}&nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}&nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}&nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}&nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}&nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}&nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}&nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}&nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}&nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}&nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}&nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}&nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}&nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}&nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}&nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}&nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}&nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}&nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}
+                {settings.ticker_text} &nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text} &nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text} &nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text} &nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text} &nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text} &nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text} &nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}
               </div>
             </div>
             <style jsx>{`
               @keyframes marquee {
-            0% { transform: translateX(0%); }
-                100% { transform: translateX(50%); }
+                0% { transform: translateX(100%); }
+                100% { transform: translateX(-100%); }
               }
               .animate-marquee {
                 display: inline-block;
@@ -263,7 +263,6 @@ export default function NICPalestineLanding() {
                 <span>🚨</span> <span className="hidden sm:inline">حالة طوارئ</span>
               </a>
 
-              {/* تم تعديل الكلاسات هنا لضمان ظهور حالة الدوام على الجوال والشاشات الكبيرة */}
               <div className={`flex items-center gap-1.5 ${status.bgLight} border border-slate-200 px-2 sm:px-2.5 py-1 rounded-xl text-[10px] sm:text-xs font-bold shadow-sm shrink-0`}>
                 <span className={`w-2 h-2 rounded-full ${status.color} ${status.isOpen ? 'animate-ping' : ''}`}></span>
                 <span className={status.textColor}>{status.text}</span>
