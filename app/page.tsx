@@ -219,7 +219,7 @@ export default function NICPalestineLanding() {
               }
               .animate-marquee {
                 display: inline-block;
-                animation: marquee 15s linear infinite;
+                animation: marquee 25s linear infinite;
               }
             `}</style>
           </div>
