@@ -112,6 +112,7 @@ export default function NICPalestineLanding() {
     setCallbackError('');
 
     try {
+      // إدخال البيانات مباشرة إلى جدول call_requests في Supabase
       const { error } = await supabase.from('call_requests').insert([
         {
           name: callbackName.trim(),
@@ -208,13 +209,12 @@ export default function NICPalestineLanding() {
             </span>
             <div className="flex-1 overflow-hidden relative">
               <div className="whitespace-nowrap animate-marquee font-bold text-xs md:text-sm text-white inline-block">
-                <span>{settings.ticker_text}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                <span>{settings.ticker_text}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                {settings.ticker_text} &nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text} &nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text} &nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text} &nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text} &nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text} &nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text} &nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}&nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}&nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}&nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}&nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}&nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}&nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}&nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}&nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}&nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}&nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}&nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}&nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}&nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}&nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}&nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}&nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}&nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}&nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}&nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}&nbsp;&nbsp;&nbsp;&nbsp; - &nbsp;&nbsp;&nbsp;&nbsp; {settings.ticker_text}
               </div>
             </div>
             <style jsx>{`
               @keyframes marquee {
-                0% { transform: translateX(0%); }
+            0% { transform: translateX(0%); }
                 100% { transform: translateX(50%); }
               }
               .animate-marquee {
@@ -264,7 +264,7 @@ export default function NICPalestineLanding() {
                 <span>🚨</span> <span className="hidden sm:inline">حالة طوارئ</span>
               </a>
 
-              <div className={`flex items-center gap-1.5 ${status.bgLight} border border-slate-200 px-2 py-1 rounded-xl text-[10px] sm:text-xs font-bold shadow-sm shrink-0`}>
+              <div className={`hidden lg:flex items-center gap-1.5 ${status.bgLight} border border-slate-200 px-2.5 py-1 rounded-xl text-xs font-bold shadow-sm`}>
                 <span className={`w-2 h-2 rounded-full ${status.color} ${status.isOpen ? 'animate-ping' : ''}`}></span>
                 <span className={status.textColor}>{status.text}</span>
               </div>
@@ -653,69 +653,77 @@ export default function NICPalestineLanding() {
                 rel="noopener noreferrer"
                 className="inline-block text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-600 hover:text-white px-4 py-2 rounded-lg border border-emerald-200 transition-all shadow-sm mt-2"
               >
-                فتح الخريطة
+                🗺️ خرائط جوجل
               </a>
             </div>
 
           </div>
 
-          <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm max-w-xl mx-auto">
-            <div className="text-center mb-6">
-              <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-2 text-lg">
-                📲
-              </div>
-              <h3 className="font-black text-slate-900 text-lg">طلب اتصال من الفرع</h3>
-              <p className="text-xs text-slate-500 mt-1">أدخل اسمك ورقم هاتفك وسنقوم بالاتصال بك في أقرب وقت</p>
+          <div className="bg-gradient-to-r from-emerald-900 to-slate-900 rounded-3xl p-6 md:p-10 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-8 border border-emerald-800">
+            <div className="space-y-2 text-center md:text-right">
+              <span className="bg-emerald-500/20 text-emerald-300 text-xs font-bold px-3 py-1 rounded-full border border-emerald-500/30">
+                خدمة معاودة الاتصال
+              </span>
+              <h3 className="text-xl md:text-2xl font-black">هل ترغب أن نتصل بك؟</h3>
+              <p className="text-emerald-200 text-xs md:text-sm">أدخل اسمك ورقم هاتفك وسيقوم فريقنا بالتواصل معك في أقرب وقت.</p>
             </div>
 
-            <form onSubmit={handleCallbackSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">الاسم الكريم</label>
+            <form onSubmit={handleCallbackSubmit} className="w-full md:w-auto flex flex-col sm:flex-row gap-3">
+              <div className="space-y-2 w-full sm:w-auto">
                 <input
                   type="text"
+                  placeholder="اسمك الكريم"
                   value={callbackName}
                   onChange={(e) => setCallbackName(e.target.value)}
-                  placeholder="مثال: أحمد محمد"
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:border-emerald-600 transition-colors"
+                  className="w-full sm:w-48 px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs focus:outline-none focus:border-emerald-500"
                 />
               </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">رقم الهاتف</label>
+              <div className="space-y-2 w-full sm:w-auto">
                 <input
                   type="tel"
-                  dir="ltr"
+                  placeholder="رقم الهاتف (مثال: 059xxxxxxx)"
                   value={callbackPhone}
                   onChange={(e) => setCallbackPhone(e.target.value)}
-                  placeholder="059xxxxxxx"
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:border-emerald-600 transition-colors text-right"
+                  className="w-full sm:w-56 px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs focus:outline-none focus:border-emerald-500"
+                  dir="ltr"
                 />
               </div>
-
-              {callbackError && (
-                <p className="text-xs text-rose-600 font-bold bg-rose-50 p-2 rounded-lg text-center">{callbackError}</p>
-              )}
-
-              {callbackSuccess && (
-                <p className="text-xs text-emerald-700 font-bold bg-emerald-50 p-2 rounded-lg text-center">تم إرسال طلبك بنجاح! سنتواصل معك قريباً.</p>
-              )}
-
               <button
                 type="submit"
-                className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-xl transition-all shadow-md"
+                className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black px-6 py-3 rounded-xl text-xs transition-all shadow-md shrink-0"
               >
-                إرسال طلب الاتصال
+                ارسل الطلب
               </button>
             </form>
           </div>
+
+          {callbackError && (
+            <div className="text-center text-rose-400 text-xs font-bold bg-rose-950/50 p-3 rounded-xl border border-rose-900">
+              {callbackError}
+            </div>
+          )}
+
+          {callbackSuccess && (
+            <div className="text-center text-emerald-400 text-xs font-bold bg-emerald-950/50 p-3 rounded-xl border border-rose-900">
+              تم إرسال طلبك بنجاح! سيتواصل معك فريق الفرع قريباً.
+            </div>
+          )}
 
         </div>
       </section>
 
       {/* الفوتر */}
-      <footer className="bg-slate-900 text-slate-400 py-8 px-6 border-t border-slate-800 text-center text-xs space-y-3">
-        <p>© {new Date().getFullYear()} {settings.branch_name} - الشركة الوطنية للتأمين. كافة الحقوق محفوظة.</p>
-        <p className="text-[11px] text-slate-500">تم التطوير لخدمة مراجعي الفرع بكل احترافية وسرعة</p>
+      <footer className="bg-slate-950 text-slate-400 py-8 px-6 text-center border-t border-slate-900 text-xs space-y-4">
+        <div className="flex flex-wrap justify-center items-center gap-6 font-semibold">
+          <a href="#about" className="hover:text-white transition-colors">عن الشركة</a>
+          <a href="#services" className="hover:text-white transition-colors">خدماتنا</a>
+          <a href="#testimonials" className="hover:text-white transition-colors">آراء العملاء</a>
+          <a href="#contact" className="hover:text-white transition-colors">تواصل معنا</a>
+          <a href="/admin" className="hover:text-white transition-colors">لوحة التحكم</a>
+        </div>
+        <p className="text-slate-500">
+          جميع الحقوق محفوظة © {new Date().getFullYear()} الشركة الوطنية للتأمين - {settings.branch_name}
+        </p>
       </footer>
 
     </div>
