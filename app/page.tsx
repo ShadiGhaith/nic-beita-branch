@@ -462,7 +462,7 @@ if (error) {
           
           <div className="text-center space-y-2">
             <span className="text-emerald-400 font-bold text-xs bg-emerald-950 border border-emerald-800 px-3 py-1 rounded-md">أداة تفاعلية</span>
-            <h2 className="text-2xl md:text-3xl font-black text-white">حاسبة الأقساط الشاملة ومتعددة الخيارات</h2>
+            <h2 className="text-2xl md:text-3xl font-black text-white">حاسبة التأمين</h2>
             <p className="text-slate-400 text-xs md:text-sm">قم باختيار التغطيات التي ترغب بها (الإلزامي، التأمين الشامل، وتأمين المستوطنين) لمعرفة التكلفة المفصلة بالكامل.</p>
           </div>
 
@@ -699,9 +699,9 @@ if (error) {
           
           <div className="text-center space-y-3 max-w-2xl mx-auto">
             <span className="text-emerald-400 font-bold text-xs bg-emerald-950 border border-emerald-800 px-3 py-1 rounded-md">قنوات الاتصال وأوقات العمل</span>
-            <h2 className="text-2xl md:text-4xl font-black">اتصل بنا وساعات الدوام الرسمي</h2>
+            <h2 className="text-2xl md:text-4xl font-black">تواصل معنا</h2>
             <p className="text-slate-400 text-xs md:text-sm">
-              نسعد بزيارتكم في {BRANCH_LOCATION}، أو متابعة حالة الدوام المباشرة والتواصل عبر القنوات المتاحة.
+              نسعد بزيارتكم في مكتبنا ب {BRANCH_LOCATION} خلال اوقات الدوام الرسمي .
             </p>
           </div>
 
