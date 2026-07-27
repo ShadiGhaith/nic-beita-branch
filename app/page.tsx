@@ -365,7 +365,7 @@ if (error) {
               <a href="#calculator" className="hover:text-emerald-700 transition-colors">حاسبة التأمين</a>
               <a href="#services" className="hover:text-emerald-700 transition-colors">خدمات التأمين</a>
               <a href="#about" className="hover:text-emerald-700 transition-colors">من نحن</a>
-              <a href="#contact" className="hover:text-emerald-700 transition-colors">اتصل بنا وساعات الدوام</a>
+              <a href="#contact" className="hover:text-emerald-700 transition-colors">تواصل معنا</a>
             </nav>
 
             <div className="flex items-center gap-1 sm:gap-2 shrink-0">
