@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "app.vercel.nic_beita_branch.twa",
+        "sha256_cert_fingerprints": ["6D:82:49:11:AD:21:56:D5:C0:6B:99:2F:05:52:5F:D2:6D:68:7C:2A:54:17:F4:01:68:C5:AC:E5:CD:FC:8A:C2"]
+      }
+    }]
