@@ -1,93 +1,24 @@
-// @ts-nocheck
-import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import admin from 'firebase-admin';
+import { adminMessaging } from "@/lib/firebaseAdmin"; // استيراد الـ Firebase Admin
+import { createClient } from "@supabase/supabase-js";
 
-// 1. تهيئة Supabase Client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-// 2. تهيئة Firebase Admin SDK
-if (!admin.apps.length) {
+export async function POST(req: Request) {
   try {
-    admin.initializeApp({
-      credential: admin.credential.cert({
-        projectId: process.env.FIREBASE_PROJECT_ID,
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        // معالجة الأسطر الجديدة في المفتاح الخاص
-        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-      }),
-    });
+    const { token } = await req.json();
+
+    if (!token) {
+      return Response.json({ error: "Token is required" }, { status: 400 });
+    }
+
+    // 1. حفظ التوكن في جدول Supabase (الطريقة الاعتيادية التي تستخدمها)
+    // ... كود الحفظ في Supabase هنا ...
+
+    // 2. تسجيل التوكن تلقائياً في الـ Topic (مثلاً اسم الـ Topic هو "all")
+    const topic = "all";
+    await adminMessaging.subscribeToTopic([token], topic);
+
+    return Response.json({ success: true, message: "Subscribed to topic successfully" });
   } catch (error) {
-    console.error('Firebase Admin Initialization Error:', error);
-  }
-}
-
-// 3. معالج طلبات الـ POST (يجب أن يكون اسمها POST بالحروف الكبيرة)
-export async function POST(request: Request) {
-  try {
-    const body = await request.json();
-    const { title, body: messageBody } = body;
-
-    if (!title || !messageBody) {
-      return NextResponse.json(
-        { error: 'العنوان ونص الإشعار مطلوبان' },
-        { status: 400 }
-      );
-    }
-
-    // جلب كل توكنات الأجهزة المسجلة من Supabase
-    const { data: subscriptions, error: dbError } = await supabase
-      .from('push_subscriptions')
-      .select('fcm_token');
-
-    if (dbError) {
-      console.error('Database Error:', dbError);
-      return NextResponse.json(
-        { error: 'فشل في جلب الاشتراكات من قاعدة البيانات' },
-        { status: 500 }
-      );
-    }
-
-    if (!subscriptions || subscriptions.length === 0) {
-      return NextResponse.json({
-        message: 'لا يوجد أجهزة مسجلة لإرسال الإشعار إليها',
-        successCount: 0,
-      });
-    }
-
-    // استخراج التوكنات في مصفوفة
-    const tokens = subscriptions
-      .map((s) => s.fcm_token)
-      .filter((token) => Boolean(token));
-
-    if (tokens.length === 0) {
-      return NextResponse.json({
-        message: 'لا توجد توكنات صالحة للإرسال',
-        successCount: 0,
-      });
-    }
-
-    // إرسال الإشعار المتعدد عبر Firebase Multicast
-    const response = await admin.messaging().sendEachForMulticast({
-      tokens,
-      notification: {
-        title,
-        body: messageBody,
-      },
-    });
-
-    return NextResponse.json({
-      success: true,
-      successCount: response.successCount,
-      failureCount: response.failureCount,
-    });
-  } catch (error: any) {
-    console.error('Send Notification Error:', error);
-    return NextResponse.json(
-      { error: error.message || 'حدث خطأ غير متوقع في الخادم' },
-      { status: 500 }
-    );
+    console.error("Error subscribing to topic:", error);
+    return Response.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
