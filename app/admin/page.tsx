@@ -27,14 +27,21 @@ export default function AdminDashboard() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [imageUrl, setImageUrl] = useState('');
-  const [displayOrder, setDisplayOrder] = useState<number>(0); // 🟢 حالة ترتيب الإضافة الجديدة
+  const [displayOrder, setDisplayOrder] = useState<number>(0);
   
   // 🟢 حالات تعديل الخدمة
   const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editDescription, setEditDescription] = useState('');
   const [editImageUrl, setEditImageUrl] = useState('');
-  const [editDisplayOrder, setEditDisplayOrder] = useState<number>(0); // 🟢 حالة ترتيب التعديل
+  const [editDisplayOrder, setEditDisplayOrder] = useState<number>(0);
+
+  // 🔔 حالات نظام الإشعارات العامة
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notifTitle, setNotifTitle] = useState('');
+  const [notifMessage, setNotifMessage] = useState('');
+  const [notifLink, setNotifLink] = useState('');
+  const [addingNotification, setAddingNotification] = useState(false);
 
   const [savingSettings, setSavingSettings] = useState(false);
   const [addingService, setAddingService] = useState(false);
@@ -65,6 +72,7 @@ export default function AdminDashboard() {
   };
 
   const fetchAdminData = async () => {
+    // جلب إعدادات الموقع
     const { data: settings } = await supabase.from('site_settings').select('*').single();
     if (settings) {
       setBranchName(settings.branch_name || '');
@@ -74,9 +82,13 @@ export default function AdminDashboard() {
       setWorkingStatusMode(settings.working_status_mode || 'auto');
     }
 
-    // 🟢 جلب الخدمات مرتبة تصاعدياً حسب حقل الترتيب الجديد
+    // جلب الخدمات مرتبة
     const { data: servicesData } = await supabase.from('services').select('*').order('display_order', { ascending: true });
     if (servicesData) setServices(servicesData);
+
+    // 🔔 جلب الإشعارات النشطة
+    const { data: notifsData } = await supabase.from('notifications').select('*').order('created_at', { ascending: false });
+    if (notifsData) setNotifications(notifsData);
   };
 
   const handleSaveSettings = async (e: React.FormEvent) => {
@@ -101,7 +113,7 @@ export default function AdminDashboard() {
       title,
       description,
       image_url: imageUrl,
-      display_order: displayOrder // 🟢 إرسال حقل الترتيب
+      display_order: displayOrder
     }]);
     setAddingService(false);
     if (!error) {
@@ -115,8 +127,38 @@ export default function AdminDashboard() {
   };
 
   const handleDeleteService = async (id: string) => {
-    if (confirm('هل أنت تأكد من حذف هذه الخدمة؟')) {
+    if (confirm('هل أنت متأكد من حذف هذه الخدمة؟')) {
       await supabase.from('services').delete().eq('id', id);
+      fetchAdminData();
+    }
+  };
+
+  // 🔔 دالة إضافة إشعار جديد
+  const handleAddNotification = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAddingNotification(true);
+    const { error } = await supabase.from('notifications').insert([{
+      title: notifTitle,
+      message: notifMessage,
+      link: notifLink || null,
+      created_at: new Date().toISOString()
+    }]);
+    setAddingNotification(false);
+    if (!error) {
+      setNotifTitle('');
+      setNotifMessage('');
+      setNotifLink('');
+      fetchAdminData();
+      alert('تم إرسال ونشر الإشعار بنجاح!');
+    } else {
+      alert('حدث خطأ أثناء إرسال الإشعار. تأكد من إنشاء جدول notifications في قاعدة البيانات.');
+    }
+  };
+
+  // 🔔 دالة حذف إشعار
+  const handleDeleteNotification = async (id: string) => {
+    if (confirm('هل أنت متأكد من حذف هذا الإشعار؟')) {
+      await supabase.from('notifications').delete().eq('id', id);
       fetchAdminData();
     }
   };
@@ -126,7 +168,7 @@ export default function AdminDashboard() {
     setEditTitle(service.title);
     setEditDescription(service.description);
     setEditImageUrl(service.image_url || '');
-    setEditDisplayOrder(service.display_order ?? 0); // 🟢 تعبئة حقل التترتيب عند التعديل
+    setEditDisplayOrder(service.display_order ?? 0);
   };
 
   const handleUpdateService = async (e: React.FormEvent) => {
@@ -139,7 +181,7 @@ export default function AdminDashboard() {
         title: editTitle,
         description: editDescription,
         image_url: editImageUrl,
-        display_order: editDisplayOrder // 🟢 تحديث حقل الترتيب
+        display_order: editDisplayOrder
       })
       .eq('id', editingServiceId);
 
@@ -304,6 +346,82 @@ export default function AdminDashboard() {
               </button>
             </div>
           </form>
+        </div>
+
+        {/* 🔔 قسم إرسال وإدارة الإشعارات العامة */}
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <h2 className="text-lg font-bold text-slate-900 border-b pb-2">🔔 نظام إرسال الإشعارات والتنبيهات العامة</h2>
+          <p className="text-xs text-slate-500">أرسل إشعارات وتنبيهات للعملاء (مثل عروض جديدة، تذكيرات، أو أي تنبيه عام يظهر للزوار).</p>
+          
+          <form onSubmit={handleAddNotification} className="space-y-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-800 mb-1">عنوان الإشعار</label>
+                <input
+                  type="text"
+                  required
+                  value={notifTitle}
+                  onChange={(e) => setNotifTitle(e.target.value)}
+                  placeholder="مثلاً: تنبيه هام بخصوص مواعيد الدوام"
+                  className="w-full p-2.5 border border-slate-300 bg-white text-slate-900 font-medium rounded-xl text-sm outline-none focus:border-emerald-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-800 mb-1">رابط مرفق (اختياري)</label>
+                <input
+                  type="text"
+                  value={notifLink}
+                  onChange={(e) => setNotifLink(e.target.value)}
+                  placeholder="https://..."
+                  className="w-full p-2.5 border border-slate-300 bg-white text-slate-900 font-medium rounded-xl text-sm outline-none focus:border-emerald-500"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-800 mb-1">نص الإشعار / التنبيه</label>
+              <textarea
+                required
+                rows={2}
+                value={notifMessage}
+                onChange={(e) => setNotifMessage(e.target.value)}
+                placeholder="اكتب تفاصيل الإشعار هنا..."
+                className="w-full p-2.5 border border-slate-300 bg-white text-slate-900 font-medium rounded-xl text-sm outline-none focus:border-emerald-500"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={addingNotification}
+              className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow"
+            >
+              {addingNotification ? 'جاري الإرسال...' : '📤 إرسال الإشعار للعملاء'}
+            </button>
+          </form>
+
+          {/* قائمة الإشعارات المرسلة */}
+          <div className="space-y-2 pt-2">
+            <h3 className="text-xs font-bold text-slate-700">الإشعارات الحالية المرسلة ({notifications.length})</h3>
+            {notifications.length === 0 ? (
+              <p className="text-xs text-slate-400">لا توجد إشعارات مرسلة حالياً.</p>
+            ) : (
+              <div className="space-y-2 max-h-60 overflow-y-auto">
+                {notifications.map((notif) => (
+                  <div key={notif.id} className="p-3 bg-white border border-slate-200 rounded-xl flex justify-between items-center shadow-xs">
+                    <div>
+                      <h4 className="font-bold text-slate-900 text-xs">{notif.title}</h4>
+                      <p className="text-xs text-slate-600 mt-0.5">{notif.message}</p>
+                      <span className="text-[10px] text-slate-400 mt-1 block">{new Date(notif.created_at).toLocaleString('ar-PS')}</span>
+                    </div>
+                    <button
+                      onClick={() => handleDeleteNotification(notif.id)}
+                      className="text-xs font-bold text-red-600 hover:bg-red-50 p-2 rounded-lg transition-all"
+                    >
+                      🗑️ حذف
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* إضافة برنامج تأميني جديد */}
