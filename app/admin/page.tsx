@@ -133,25 +133,50 @@ export default function AdminDashboard() {
     }
   };
 
-  // 🔔 دالة إضافة إشعار جديد
+  // 🔔 دالة إضافة وإرسال الإشعار (قاعدة البيانات + Firebase Push)
   const handleAddNotification = async (e: React.FormEvent) => {
     e.preventDefault();
     setAddingNotification(true);
-    const { error } = await supabase.from('notifications').insert([{
-      title: notifTitle,
-      message: notifMessage,
-      link: notifLink || null,
-      created_at: new Date().toISOString()
-    }]);
-    setAddingNotification(false);
-    if (!error) {
+
+    try {
+      // 1. حفظ الإشعار في جدول notifications بقاعدة البيانات
+      const { error: dbError } = await supabase.from('notifications').insert([{
+        title: notifTitle,
+        message: notifMessage,
+        link: notifLink || null,
+        created_at: new Date().toISOString()
+      }]);
+
+      if (dbError) throw dbError;
+
+      // 2. إرسال الإشعار الفوري (Push Notification) عبر الـ API الخاص بـ Firebase
+      const res = await fetch('/api/send-notification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          title: notifTitle, 
+          body: notifMessage 
+        }),
+      });
+
+      const result = await res.json();
+
       setNotifTitle('');
       setNotifMessage('');
       setNotifLink('');
       fetchAdminData();
-      alert('تم إرسال ونشر الإشعار بنجاح!');
-    } else {
-      alert('حدث خطأ أثناء إرسال الإشعار. تأكد من إنشاء جدول notifications في قاعدة البيانات.');
+
+      if (result.success) {
+        alert(`تم إرسال ونشر الإشعار بنجاح! وصل إلى ${result.successCount} جهاز.`);
+      } else {
+        alert('تم حفظ الإشعار في قاعدة البيانات، ولكن حدثت مشكلة في إرسال التنبيه الفوري للهواتف.');
+      }
+
+    } catch (error) {
+      console.error(error);
+      alert('حدث خطأ أثناء إرسال الإشعار. تأكد من إعدادات قاعدة البيانات والـ API.');
+    } finally {
+      setAddingNotification(false);
     }
   };
 
@@ -351,7 +376,7 @@ export default function AdminDashboard() {
         {/* 🔔 قسم إرسال وإدارة الإشعارات العامة */}
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
           <h2 className="text-lg font-bold text-slate-900 border-b pb-2">🔔 نظام إرسال الإشعارات والتنبيهات العامة</h2>
-          <p className="text-xs text-slate-500">أرسل إشعارات وتنبيهات للعملاء (مثل عروض جديدة، تذكيرات، أو أي تنبيه عام يظهر للزوار).</p>
+          <p className="text-xs text-slate-500">أرسل إشعارات وتنبيهات للعملاء (مثل عروض جديدة، تذكيرات، أو أي تنبيه عام يظهر للزوار ويصل لهواتفهم).</p>
           
           <form onSubmit={handleAddNotification} className="space-y-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -393,7 +418,7 @@ export default function AdminDashboard() {
               disabled={addingNotification}
               className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow"
             >
-              {addingNotification ? 'جاري الإرسال...' : '📤 إرسال الإشعار للعملاء'}
+              {addingNotification ? 'جاري الإرسال للهواتف والقاعدة...' : '📤 إرسال الإشعار للعملاء'}
             </button>
           </form>
 
