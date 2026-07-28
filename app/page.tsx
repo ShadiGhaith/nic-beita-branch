@@ -257,7 +257,7 @@ if (error) {
       parts.push(`شامل (قيمة المركبة: ${valText} ₪)`);
     }
     if (includeSettlers) parts.push('تأمين مستوطنين (ثابت 500 ₪)');
-    return parts.join(' - ');
+    return parts.join(' + ');
   };
 
   const calcWhatsappMessage = encodeURIComponent(`مرحباً ${settings.branch_name}، أود طلب عرض سعر مفصل بناءً على الحاسبة:\n- التغطيات المطلوبة: ${getCalcDetailsText()}\n- الإجمالي المقدر: ${totalPrice} شيكل`);
