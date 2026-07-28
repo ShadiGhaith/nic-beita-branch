@@ -95,8 +95,8 @@ export default function NICPalestineLanding() {
   const [calcEngineCC, setCalcEngineCC] = useState('1500'); // up to 1000, 1500, 2000, over2000
   const [calcCommercialType, setCalcCommercialType] = useState('1'); // 1 ton, 1.6 ton, 4 ton, over 4 ton, dump
   const [calcCarValue, setCalcCarValue] = useState<number | ''>(''); // Comprehensive insurance car value
-  const [includeComprehensive, setIncludeComprehensive] = useState(true); // Toggle comprehensive insurance
-  const [includeSettlers, setIncludeSettlers] = useState(true); // Toggle settlers insurance
+  const [includeComprehensive, setIncludeComprehensive] = useStatefalse; // Toggle comprehensive insurance
+  const [includeSettlers, setIncludeSettlers] = useState(falae); // Toggle settlers insurance
 
   useEffect(() => {
     fetchData();
