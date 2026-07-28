@@ -414,7 +414,7 @@ if (error) {
                 <span>{notificationsEnabled ? '🔔' : '🔕'}</span>
                 <span>{notificationsEnabled ? 'إشعارات العروض مفعلة' : 'تفعيل إشعارات العروض والخصومات'}</span>
               </button>
-              <a href="#calculator" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 rounded-lg text-xs font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700">حاسبة الأقساط</a>
+              <a href="#calculator" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 rounded-lg text-xs font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700">حاسبة التأمين</a>
               <a href="#services" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 rounded-lg text-xs font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700">خدمات التأمين</a>
               <a href="#about" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 rounded-lg text-xs font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700">من نحن</a>
               <a href="#contact" onClick={() => setMobileMenuOpen(false)} className="block py-2 px-3 rounded-lg text-xs font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700">اتصل بنا وساعات الدوام</a>
