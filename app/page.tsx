@@ -741,7 +741,7 @@ if (error) {
                 <div className="space-y-3 text-xs">
                   <div className="flex justify-between items-center py-1.5 border-b border-slate-700/60">
                     <span className="text-slate-300 font-bold">الأحد - الخميس:</span>
-                    <span className="font-mono text-emerald-400 font-bold" dir="ltr">09:00 AM – 04:00 PM</span>
+                    <span className="font-mono text-emerald-400 font-bold" dir="ltr">04:00 PM - 09:00 AM</span>
                   </div>
                   <div className="flex justify-between items-center py-1.5">
                     <span className="text-slate-300 font-bold">الجمعة والسبت:</span>
