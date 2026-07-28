@@ -235,8 +235,8 @@ if (error) {
 
   const getComprehensivePrice = () => {
     if (!includeComprehensive || calcCarValue === '') return 0;
-    if (calcCarValue <= 50000) return 1000;
-    if (calcCarValue <= 200000) return Math.round(calcCarValue * 0.0175);
+    if (calcCarValue <=57000) return 1000;
+    if (calcCarValue <= 200000) return Math.round(calcCarValue * 1.75);
     return Math.round(calcCarValue * 0.02);
   };
 
