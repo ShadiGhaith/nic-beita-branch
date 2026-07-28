@@ -353,7 +353,7 @@ if (error) {
             
             <div className="flex items-center gap-1.5 shrink-0">
               <a href="/admin" title="لوحة التحكم">
-                <img src={LOGO_URL} alt="شركة الوطنية للتأمين" className="h-8 sm:h-10 md:h-12 w-auto object-contain rounded-md hover:opacity-80 transition-opacity cursor-pointer" />
+                <img src={LOGO_URL} alt="شركة التأمين الوطنية" className="h-8 sm:h-10 md:h-12 w-auto object-contain rounded-md hover:opacity-80 transition-opacity cursor-pointer" />
               </a>
               <div className="border-r-2 border-emerald-600 pr-1.5 my-0.5">
                 <h1 className="font-extrabold text-slate-900 text-xs sm:text-base leading-tight">شركة الوطنية للتأمين</h1>
