@@ -95,8 +95,8 @@ const [calcCategory, setCalcCategory] = useState('private'); // private, commerc
 const [calcEngineCC, setCalcEngineCC] = useState('1500'); // up to 1000, 1500, 2000, over2000
 const [calcCommercialType, setCalcCommercialType] = useState('1'); // 1 ton, 1.6 ton, 4 ton, over 4 ton, dump
 const [calcCarValue, setCalcCarValue] = useState<number | ''>(''); // Comprehensive insurance car value
-const [includeComprehensive, setIncludeComprehensive] = useState(true); // Toggle comprehensive insurance
-const [includeSettlers, setIncludeSettlers] = useState(true); // Toggle settlers insurance
+const [includeComprehensive, setIncludeComprehensive] = useState(false); // Toggle comprehensive insurance
+const [includeSettlers, setIncludeSettlers] = useState(false); // Toggle settlers insurance
 
 useEffect(() => {
 fetchData();
@@ -353,10 +353,10 @@ return (
 
 <div className="flex items-center gap-1.5 shrink-0">
 <a href="/admin" title="لوحة التحكم">
-<img src={LOGO_URL} alt="شركة الوطنية للتأمين" className="h-8 sm:h-10 md:h-12 w-auto object-contain rounded-md hover:opacity-80 transition-opacity cursor-pointer" />
+<img src={LOGO_URL} alt="شركة التأمين الوطنية" className="h-8 sm:h-10 md:h-12 w-auto object-contain rounded-md hover:opacity-80 transition-opacity cursor-pointer" />
 </a>
 <div className="border-r-2 border-emerald-600 pr-1.5 my-0.5">
-<h1 className="font-extrabold text-slate-900 text-xs sm:text-base leading-tight">شركة الوطنية للتأمين</h1>
+<h1 className="font-extrabold text-slate-900 text-xs sm:text-base leading-tight">شركة التأمين الوطنية</h1>
 <p className="text-[10px] sm:text-xs text-emerald-700 font-bold">{settings.branch_name || 'فرع بيتا'}</p>
 </div>
 </div>
